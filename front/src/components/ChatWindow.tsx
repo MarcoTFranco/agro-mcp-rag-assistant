@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react'
 import { MessageBubble } from './MessageBubble'
 import { EmptyState } from './EmptyState'
 import './ChatWindow.css'
-import './EmptyState.css'
 import type { Message } from '../types'
 
 interface ChatWindowProps {
