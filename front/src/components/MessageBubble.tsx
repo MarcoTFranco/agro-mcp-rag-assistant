@@ -6,14 +6,14 @@ import type { Message } from '../types'
 
 interface MessageBubbleProps {
   message: Message
-  onReenviar?: (() => void) | undefined
+  onReenviar?: () => void
 }
 
 export function MessageBubble({ message, onReenviar }: MessageBubbleProps) {
   const isUser = message.role === 'user'
 
   return (
-    <div className={`bubble bubble--${message.role}`} aria-label={isUser ? 'Sua pergunta' : 'Resposta do assistente'}>
+    <div role="article" className={`bubble bubble--${message.role}`} aria-label={isUser ? 'Sua pergunta' : 'Resposta do assistente'}>
       {isUser ? (
         <p className="bubble__user-text">{message.content}</p>
       ) : (

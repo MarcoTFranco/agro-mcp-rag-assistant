@@ -13,9 +13,10 @@ interface ChatWindowProps {
 export function ChatWindow({ messages, onSugestao, onReenviar }: ChatWindowProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages.length])
 
   const ultimaMensagem = messages[messages.length - 1]
 

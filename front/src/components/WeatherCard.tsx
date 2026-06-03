@@ -1,5 +1,6 @@
 import './WeatherCard.css'
 
+// TODO Fase 3: expandir props para receber dados climáticos estruturados do payload
 interface WeatherCardProps {
   visivel: boolean
 }
