@@ -134,7 +134,7 @@ agro-mcp-rag-assistant/
 | Orquestrador — `POST /consulta` | ⬜ Pendente |
 | MCP Clima (Docker + OpenWeatherMap) | ⬜ Pendente |
 | API Gateway (Spring Boot + SSE) | ⬜ Pendente |
-| Front End mínimo (React + SSE) | ⬜ Pendente |
+| Front End mínimo (React + SSE) | ✅ Concluído |
 | Demo gravada | ⬜ Pendente |
 
 ---
