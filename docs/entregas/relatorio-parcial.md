@@ -18,7 +18,7 @@ Este relatório documenta o estado de desenvolvimento ao final da **Fase 2** do 
 
 | Componente | Estado | Observações |
 |---|---|---|
-| Notebook Colab (Ollama + ngrok) | ⬜ Pendente | Instala Ollama, baixa modelo, expõe porta 11434 |
+| Notebook Colab (Ollama + ngrok) | ✅ Concluído | Instala Ollama, baixa modelo, expõe porta 11434 |
 | Pipeline RAG (ingestão + consulta) | ⬜ Pendente | ChromaDB local, sentence-transformers |
 | Orquestrador — `POST /consulta` | ⬜ Pendente | LangChain Agent, integra RAG e MCP |
 | MCP Clima (OpenWeatherMap) | ⬜ Pendente | Contêiner Docker, SDK `mcp` Python |
