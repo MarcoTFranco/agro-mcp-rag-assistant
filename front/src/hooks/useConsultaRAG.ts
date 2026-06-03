@@ -1,14 +1,13 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import type { Message, RespostaConsulta } from '../types'
 
 function gerarId(): string {
-  return Math.random().toString(36).slice(2)
+  return crypto.randomUUID()
 }
 
 interface UseConsultaRAGReturn {
   loading: boolean
   messages: Message[]
-  erro: string | null
   enviar: (pergunta: string) => void
   reenviar: () => void
 }
@@ -16,17 +15,27 @@ interface UseConsultaRAGReturn {
 export function useConsultaRAG(): UseConsultaRAGReturn {
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
-  const [erro, setErro] = useState<string | null>(null)
   const sourceRef = useRef<EventSource | null>(null)
+  const timeoutRef = useRef<ReturnType<typeof window.setTimeout> | null>(null)
   const ultimaPerguntaRef = useRef<string>('')
   const loadingRef = useRef(false)
+
+  useEffect(() => {
+    return () => {
+      sourceRef.current?.close()
+      if (timeoutRef.current !== null) clearTimeout(timeoutRef.current)
+    }
+  }, [])
 
   const enviar = useCallback((pergunta: string) => {
     if (loadingRef.current) return
 
     ultimaPerguntaRef.current = pergunta
     sourceRef.current?.close()
-    setErro(null)
+    if (timeoutRef.current !== null) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
+    }
     loadingRef.current = true
 
     const msgUsuario: Message = {
@@ -59,10 +68,11 @@ export function useConsultaRAG(): UseConsultaRAGReturn {
 
     const concluir = () => {
       loadingRef.current = false
+      timeoutRef.current = null
       setLoading(false)
     }
 
-    const timeout = window.setTimeout(() => {
+    timeoutRef.current = window.setTimeout(() => {
       source.close()
       setMessages(prev =>
         prev.map(m =>
@@ -75,7 +85,10 @@ export function useConsultaRAG(): UseConsultaRAGReturn {
     }, 30_000)
 
     source.onmessage = (event: MessageEvent) => {
-      clearTimeout(timeout)
+      if (timeoutRef.current !== null) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
       source.close()
 
       let data: RespostaConsulta
@@ -111,7 +124,10 @@ export function useConsultaRAG(): UseConsultaRAGReturn {
     }
 
     source.onerror = () => {
-      clearTimeout(timeout)
+      if (timeoutRef.current !== null) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
       source.close()
       setMessages(prev =>
         prev.map(m =>
@@ -134,5 +150,5 @@ export function useConsultaRAG(): UseConsultaRAGReturn {
     }
   }, [enviar])
 
-  return { loading, messages, erro, enviar, reenviar }
+  return { loading, messages, enviar, reenviar }
 }

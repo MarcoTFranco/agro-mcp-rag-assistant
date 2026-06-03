@@ -41,7 +41,6 @@ describe('useConsultaRAG', () => {
     const { result } = renderHook(() => useConsultaRAG())
     expect(result.current.loading).toBe(false)
     expect(result.current.messages).toHaveLength(0)
-    expect(result.current.erro).toBeNull()
   })
 
   it('adiciona mensagem do usuário e abre SSE ao enviar', () => {
