@@ -1,0 +1,18 @@
+.chat-window {
+  position: fixed;
+  top: var(--header-height);
+  left: 0;
+  right: 0;
+  bottom: var(--input-height);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.chat-window__messages {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 16px 16px;
+  max-width: 720px;
+  margin: 0 auto;
+}
