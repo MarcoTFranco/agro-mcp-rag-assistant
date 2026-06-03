@@ -2,6 +2,8 @@ import { renderHook, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { useConsultaRAG } from '../useConsultaRAG'
 
+vi.useFakeTimers()
+
 class MockEventSource {
   static instances: MockEventSource[] = []
   url: string
@@ -34,6 +36,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  vi.clearAllTimers()
 })
 
 describe('useConsultaRAG', () => {
@@ -118,5 +121,26 @@ describe('useConsultaRAG', () => {
 
     const assistantMsg = result.current.messages[1]
     expect(assistantMsg?.mcpInvocados).toContain('mcp-clima')
+  })
+
+  it('marca erro de timeout após 30 segundos sem resposta', () => {
+    const { result } = renderHook(() => useConsultaRAG())
+
+    act(() => {
+      result.current.enviar('teste de timeout')
+    })
+
+    const source = MockEventSource.instances[0]!
+    expect(result.current.loading).toBe(true)
+
+    act(() => {
+      vi.advanceTimersByTime(30_000)
+    })
+
+    const assistantMsg = result.current.messages[1]
+    expect(assistantMsg?.erro).toBe('O servidor demorou demais para responder.')
+    expect(assistantMsg?.loading).toBe(false)
+    expect(result.current.loading).toBe(false)
+    expect(source.closed).toBe(true)
   })
 })

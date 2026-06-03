@@ -12,11 +12,11 @@ interface ChatWindowProps {
 
 export function ChatWindow({ messages, onSugestao, onReenviar }: ChatWindowProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
+  const messageCount = messages.length
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages.length])
+  }, [messageCount])
 
   const ultimaMensagem = messages[messages.length - 1]
 
@@ -30,17 +30,14 @@ export function ChatWindow({ messages, onSugestao, onReenviar }: ChatWindowProps
         <EmptyState onSugestao={onSugestao} />
       ) : (
         <div className="chat-window__messages">
-          {messages.map(msg => (
-            <MessageBubble
-              key={msg.id}
-              message={msg}
-              onReenviar={
-                msg.id === ultimaMensagem?.id && msg.erro !== null
-                  ? onReenviar
-                  : undefined
-              }
-            />
-          ))}
+          {messages.map(msg => {
+            const isLastWithError = msg.id === ultimaMensagem?.id && msg.erro !== null
+            return isLastWithError ? (
+              <MessageBubble key={msg.id} message={msg} onReenviar={onReenviar} />
+            ) : (
+              <MessageBubble key={msg.id} message={msg} />
+            )
+          })}
           <div ref={bottomRef} aria-hidden="true" />
         </div>
       )}

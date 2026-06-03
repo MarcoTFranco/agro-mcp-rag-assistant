@@ -84,6 +84,8 @@ export function useConsultaRAG(): UseConsultaRAGReturn {
       concluir()
     }, 30_000)
 
+    // Captura eventos sem nome. Se o Gateway usar named events (ex: event: resultado),
+    // substituir por source.addEventListener('resultado', handler)
     source.onmessage = (event: MessageEvent) => {
       if (timeoutRef.current !== null) {
         clearTimeout(timeoutRef.current)
