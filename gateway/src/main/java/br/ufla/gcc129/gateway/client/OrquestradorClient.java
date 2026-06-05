@@ -20,7 +20,8 @@ public class OrquestradorClient {
 
     public RespostaConsulta consultar(String pergunta) {
         String url = orquestradorUrl + "/consulta";
-        log.info("Chamando orquestrador: {} | pergunta: {}", url, pergunta);
+        log.info("Chamando orquestrador: {} | perguntaLen={}", url, pergunta.length());
+        log.debug("Pergunta completa: {}", pergunta);
         return restTemplate.postForObject(url, new ConsultaRequest(pergunta), RespostaConsulta.class);
     }
 }
