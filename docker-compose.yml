@@ -1,0 +1,23 @@
+services:
+
+  gateway:
+    build: ./gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - ORQUESTRADOR_URL=http://agente:8000
+      - GATEWAY_CORS_ORIGIN=http://localhost
+    # healthcheck para o front saber quando o gateway está pronto
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  front:
+    build: ./front
+    ports:
+      - "80:80"
+    depends_on:
+      gateway:
+        condition: service_healthy
