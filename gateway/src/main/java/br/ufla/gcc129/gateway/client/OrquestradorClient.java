@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Objects;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -22,6 +24,9 @@ public class OrquestradorClient {
         String url = orquestradorUrl + "/consulta";
         log.info("Chamando orquestrador: {} | perguntaLen={}", url, pergunta.length());
         log.debug("Pergunta completa: {}", pergunta);
-        return restTemplate.postForObject(url, new ConsultaRequest(pergunta), RespostaConsulta.class);
+        return Objects.requireNonNull(
+            restTemplate.postForObject(url, new ConsultaRequest(pergunta), RespostaConsulta.class),
+            "Orquestrador retornou resposta vazia"
+        );
     }
 }
