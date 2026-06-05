@@ -52,7 +52,14 @@ public class ConsultaController {
                 emitter.complete();
             } catch (Exception e) {
                 log.error("Erro ao processar consulta: {}", e.getMessage());
-                emitter.completeWithError(e);
+                try {
+                    emitter.send(SseEmitter.event()
+                        .name("erro")
+                        .data("{\"erro\": \"Serviço temporariamente indisponível. Tente novamente em instantes.\"}"));
+                    emitter.complete();
+                } catch (IOException ioe) {
+                    emitter.completeWithError(ioe);
+                }
             }
         });
 
