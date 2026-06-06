@@ -84,9 +84,7 @@ export function useConsultaRAG(): UseConsultaRAGReturn {
       concluir()
     }, 30_000)
 
-    // Captura eventos sem nome. Se o Gateway usar named events (ex: event: resultado),
-    // substituir por source.addEventListener('resultado', handler)
-    source.onmessage = (event: MessageEvent) => {
+    source.addEventListener('resposta', (event: MessageEvent) => {
       if (timeoutRef.current !== null) {
         clearTimeout(timeoutRef.current)
         timeoutRef.current = null
@@ -123,7 +121,30 @@ export function useConsultaRAG(): UseConsultaRAGReturn {
         )
       )
       concluir()
-    }
+    })
+
+    source.addEventListener('erro', (event: MessageEvent) => {
+      if (timeoutRef.current !== null) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
+      source.close()
+
+      let mensagem = 'Serviço temporariamente indisponível. Tente novamente.'
+      try {
+        const data = JSON.parse(event.data as string) as { erro: string }
+        if (data.erro) mensagem = data.erro
+      } catch { /* mantém mensagem padrão */ }
+
+      setMessages(prev =>
+        prev.map(m =>
+          m.id === idAssistente
+            ? { ...m, loading: false, erro: mensagem }
+            : m
+        )
+      )
+      concluir()
+    })
 
     source.onerror = () => {
       if (timeoutRef.current !== null) {
