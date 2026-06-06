@@ -23,7 +23,7 @@ Este relatório documenta o estado de desenvolvimento ao final da **Fase 2** do 
 | Orquestrador — `POST /consulta` | ⬜ Pendente | LangChain Agent, integra RAG e MCP |
 | MCP Clima (OpenWeatherMap) | ⬜ Pendente | Contêiner Docker, SDK `mcp` Python |
 | API Gateway (Spring Boot + SSE) | ⬜ Pendente | SseEmitter, borda do sistema |
-| Front End mínimo (React + SSE) | ⬜ Pendente | EventSource, WeatherCard condicional |
+| Front End mínimo (React + SSE) | ✅ Concluído | EventSource, WeatherCard condicional, ChatWindow, MessageBubble, FontesChips |
 | Demo gravada | ⬜ Pendente | — |
 
 > *Atualizar esta tabela conforme cada item for concluído.*
