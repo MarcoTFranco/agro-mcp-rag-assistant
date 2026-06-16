@@ -18,7 +18,7 @@ Concentra toda a lógica de negócio, orquestração e persistência. Por ser lo
 |---|---|---|
 | Front End | React + EventSource API | Interface do usuário (SSE consumer) |
 | API Gateway | Java + Spring Boot | Broker SSE, borda do sistema |
-| Orquestrador | Python + LangChain | Maestro: decide ferramentas, monta prompt |
+| Orquestrador | Python + FastAPI + httpx | Maestro: integra RAG, monta prompt, tool calling |
 | RAG + Vector Store | ChromaDB + sentence-transformers | Recuperação semântica de documentos |
 | MCP Clima | Python + SDK `mcp` (Docker) | Wrapper/Adapter sobre OpenWeatherMap |
 
@@ -31,7 +31,7 @@ Responsabilidade única: executar o modelo de linguagem e retornar o texto gerad
 | Ollama | Llama 3 / Mistral / Gemma | Servidor de inferência LLM |
 | ngrok | Túnel HTTP | Expõe a porta 11434 como URL pública temporária |
 
-> **Por que ngrok?** O Colab não possui IP público estático. O ngrok cria um túnel seguro sem necessidade de configuração de firewall, resolvendo o problema de **Transparência de Localização** (o Orquestrador chama `http://<ngrok-url>/api/generate` sem saber onde fisicamente o modelo roda).
+> **Por que ngrok?** O Colab não possui IP público estático. O ngrok cria um túnel seguro sem necessidade de configuração de firewall, resolvendo o problema de **Transparência de Localização** (o Orquestrador chama `http://<ngrok-url>/api/chat` sem saber onde fisicamente o modelo roda).
 
 > **Tradeoff:** a URL do ngrok muda a cada reinicialização do Colab e precisa ser atualizada no `.env`. Em produção real, substituir por uma GPU dedicada (ex: RunPod, AWS EC2 com GPU) eliminaria esse atrito.
 
@@ -44,7 +44,7 @@ graph TD
     subgraph Local["Backend Local"]
         FE["Front End\n(React + SSE)"]
         GW["API Gateway\n(Spring Boot + Resilience4j)"]
-        ORC["Orquestrador\n(LangChain Agent)"]
+        ORC["Orquestrador\n(FastAPI + Tool Calling)"]
         RAG["RAG Pipeline\n(ChromaDB)"]
         MCP["MCP Clima\n(Docker)"]
     end
@@ -65,7 +65,7 @@ graph TD
     ORC -->|"MCP tool call"| MCP
     MCP -->|"HTTP"| OWM
     RAG -->|"indexa"| DOCS
-    ORC -->|"HTTP POST /api/generate"| NGROK
+    ORC -->|"HTTP POST /api/chat\n(tool calling)"| NGROK
     NGROK --> OLLAMA
     OLLAMA -->|"texto gerado"| NGROK
     NGROK -->|"resposta"| ORC
@@ -86,10 +86,9 @@ graph TD
 
 ### Fase 2 — Enriquecimento e Inferência
 
-5. Se a pergunta contém indicadores climáticos (*chuva, temperatura, umidade, vento*), o Orquestrador invoca a tool `get_weather` do servidor MCP Clima, que consulta a OpenWeatherMap e retorna a previsão estruturada.
-6. O Orquestrador monta o **prompt enriquecido**: pergunta original + trechos RAG + dados climáticos.
-7. O prompt é enviado via `HTTP POST` para a URL ngrok → Ollama no Colab. A GPU processa e retorna o texto gerado.
-8. A resposta sobe: Orquestrador → Gateway (via `SseEmitter`) → Front End. A conexão SSE é encerrada ao final do stream.
+5. O Orquestrador monta o **prompt enriquecido** (pergunta + trechos RAG) e envia via `HTTP POST /api/chat` para o Ollama, junto com a **definição das tools disponíveis** (ex: `get_weather`).
+6. A **LLM decide autonomamente** se precisa de dados climáticos com base na pergunta. Se sim, retorna um `tool_call` com o nome da tool e parâmetros (ex: `{"cidade": "Lavras"}`). O Orquestrador executa a tool via MCP Clima, retorna o resultado à LLM, que gera a resposta final enriquecida.
+7. A resposta sobe: Orquestrador → Gateway (via `SseEmitter`) → Front End, incluindo os dados climáticos estruturados quando disponíveis. A conexão SSE é encerrada ao final do stream.
 
 ---
 
@@ -115,7 +114,17 @@ O Orquestrador expõe um único endpoint. Gateway e Front dependem deste contrat
       "pagina": "number"
     }
   ],
-  "mcp_invocados": ["string"]
+  "mcp_invocados": ["string"],
+  "clima": {                    // presente apenas quando a LLM invocou get_weather
+    "disponivel": true,
+    "cidade": "string",
+    "temperatura_c": "number",
+    "sensacao_termica_c": "number",
+    "umidade_pct": "number",
+    "vento_kmh": "number",
+    "descricao": "string",
+    "nuvens_pct": "number"
+  }
 }
 ```
 
@@ -127,7 +136,7 @@ O Orquestrador expõe um único endpoint. Gateway e Front dependem deste contrat
 |---|---|---|
 | Frontend | React + EventSource API | SSE nativo no browser sem biblioteca adicional |
 | Gateway | Java + Spring Boot + Resilience4j | Circuit Breaker maduro; ecossistema familiar ao time |
-| Orquestrador | Python + LangChain Agent | Abstrações prontas para RAG e uso de ferramentas (tools) |
+| Orquestrador | Python + FastAPI + httpx | Integra RAG, tool calling e LLM via Ollama /api/chat |
 | Vector Store | ChromaDB (local) | Persistência em disco; sem custo; integrado ao LangChain |
 | Embeddings | sentence-transformers (local) | Sem dependência de API externa; roda offline |
 | Protocolo de Ferramentas | SDK `mcp` (Python) | SDK oficial do protocolo MCP; padrão da indústria |
@@ -143,6 +152,6 @@ O Orquestrador expõe um único endpoint. Gateway e Front dependem deste contrat
 |---|---|
 | **Transparência de Localização** | Orquestrador acessa Ollama via URL ngrok sem conhecer a localização física da GPU |
 | **Transparência de Acesso** | Gateway e Front operam via REST/SSE padrão, sem saber detalhes internos do Orquestrador |
-| **Tolerância a Falhas** | Circuit Breaker no Gateway; separação de ambientes (Colab pode reiniciar sem perder ChromaDB) |
-| **Desacoplamento** | MCP Clima em contêiner isolado; substituível sem alterar o Orquestrador |
+| **Tolerância a Falhas** | Circuit Breaker no Gateway; healthchecks no Docker Compose; separação de ambientes (Colab pode reiniciar sem perder ChromaDB) |
+| **Desacoplamento** | MCP Clima em contêiner isolado; a LLM invoca tools via protocolo padrão — novas tools podem ser adicionadas sem alterar o Orquestrador |
 | **Escalabilidade (potencial)** | Orquestrador stateless permite múltiplas instâncias atrás do Gateway |

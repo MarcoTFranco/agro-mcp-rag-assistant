@@ -21,14 +21,29 @@ O Brasil é o maior consumidor de defensivos agrícolas do mundo (R$ 57 bilhões
 Quando o usuário descreve um sintoma ou praga em linguagem natural, o sistema:
 
 1. **RAG:** recupera os trechos técnicos mais relevantes de bulas AGROFIT e manuais Embrapa via busca semântica (ChromaDB + sentence-transformers)
-2. **MCP Clima:** consulta automaticamente a previsão meteorológica (OpenWeatherMap) se a pergunta envolver janela climática
+2. **MCP Clima (Tool Calling):** a LLM decide autonomamente se precisa de dados climáticos e invoca a ferramenta `get_weather` via protocolo MCP, especificando a cidade — sem regras hardcoded
 3. **LLM:** sintetiza tudo em uma resposta acessível, citando as fontes utilizadas
 
 ---
 
 ## Arquitetura
 
-![Poster de arquitetura do sistema](docs/arquitetura/poster_arquitetura.svg)
+O sistema é dividido em dois ambientes de execução com responsabilidades isoladas:
+
+```
+Backend Local                          Google Colab (GPU)
+─────────────────────────────────      ───────────────────
+Front End (React + SSE)                ngrok (túnel HTTP)
+    │                                       │
+API Gateway (Spring Boot + CB)         Ollama /api/chat
+    │  SSE (event: resposta)                │
+    │  ┌────────────────────┐          tool calling
+    └──► Orquestrador (FastAPI)  ◄─────────┘
+           ├── RAG (ChromaDB)  ◄── Bulas AGROFIT + Manuais Embrapa
+           └── MCP Clima       ◄── OpenWeatherMap API
+```
+
+**Por que dois ambientes?** O Google Colab oferece GPU T4 gratuita para inferência do LLM. O ngrok expõe a porta do Ollama como URL pública, resolvendo a ausência de IP estático. Separar os ambientes garante que uma reinicialização do Colab (a cada ~12h) não cause perda de dados: o ChromaDB e o estado do Orquestrador permanecem no backend local.
 
 ### Propriedades de Sistemas Distribuídos atendidas
 
@@ -36,128 +51,94 @@ Quando o usuário descreve um sintoma ou praga em linguagem natural, o sistema:
 |---|---|
 | Transparência de Localização | Orquestrador acessa Ollama via URL ngrok sem conhecer a localização física da GPU |
 | Transparência de Acesso | Gateway e Front operam via REST/SSE padrão, sem saber detalhes internos do Orquestrador |
-| Tolerância a Falhas | Circuit Breaker (Resilience4j) no Gateway; Colab pode reiniciar sem perda do ChromaDB |
-| Desacoplamento | MCP Clima em contêiner Docker isolado; substituível sem alterar o Orquestrador |
+| Tolerância a Falhas | Circuit Breaker (Resilience4j) no Gateway; healthchecks no Docker Compose; Colab pode reiniciar sem perda do ChromaDB |
+| Desacoplamento | MCP Clima em contêiner Docker isolado; a LLM invoca tools via protocolo padrão — substituível sem alterar o Orquestrador |
 | Escalabilidade | Orquestrador stateless permite múltiplas instâncias atrás do Gateway |
 
 ---
 
 ## Stack Tecnológica
 
-| Camada | Tecnologia | Versão |
-|---|---|---|
-| Frontend | React + Vite + TypeScript + EventSource API (SSE nativo) | React 19 · Vite 8 · TS 6 |
-| API Gateway | Java + Spring Boot + Resilience4j | Spring Boot 3.5 · Java 17 |
-| Orquestrador | Python + FastAPI + LangChain Agent | Python 3.11+ |
-| Vector Store | ChromaDB (local, persistência em disco) | — |
-| Embeddings | sentence-transformers (offline, sem API externa) | — |
-| Protocolo de Ferramentas | SDK `mcp` (Python) — protocolo MCP oficial | — |
-| LLM | Ollama (Llama 3 / Mistral / Gemma) | — |
-| Túnel | ngrok | — |
-| Testes (front) | Vitest + Testing Library | Vitest 4 |
-| Containerização | Docker Compose | 24+ |
+| Camada | Tecnologia |
+|---|---|
+| Frontend | React + `@microsoft/fetch-event-source` (SSE) |
+| API Gateway | Java 21 + Spring Boot 3.4 + Resilience4j (Circuit Breaker) + RestClient |
+| Orquestrador | Python + FastAPI + httpx |
+| Vector Store | ChromaDB (local, persistência em disco) |
+| Embeddings | sentence-transformers `paraphrase-multilingual-MiniLM-L12-v2` (offline) |
+| MCP Server | Python + SDK `mcp` (FastMCP) — protocolo MCP oficial |
+| LLM | Ollama `/api/chat` com tool calling (Llama 3) |
+| Túnel | ngrok |
+| Containerização | Docker Compose com healthchecks |
 
 ---
 
-## Pré-requisitos
+## Contrato da API
 
-| Ferramenta | Versão mínima | Para quê |
-|---|---|---|
-| Node.js | 20+ | Frontend React |
-| Java | 17+ | API Gateway |
-| Maven | 3.9+ | Build do Gateway |
-| Docker + Docker Compose | 24+ | MCP Clima e demais serviços |
-| Python | 3.11+ | Orquestrador e RAG |
-| Conta Google | — | Notebook Colab com GPU T4 |
-| Chave OpenWeatherMap | — | Dados climáticos em tempo real |
-| Token ngrok | — | Túnel para o Ollama no Colab |
+### Gateway — `POST /consulta` (SSE)
 
----
+O frontend faz POST para `http://localhost:9090/consulta`. A resposta é um fluxo SSE com um único evento:
 
-## Como Rodar
-
-> Os serviços estão sendo implementados em fases. Rode apenas os componentes já disponíveis.
-
-### 1. Variáveis de ambiente
-
-Crie um arquivo `.env` na raiz (nunca commitar):
-
-```env
-OPENWEATHERMAP_API_KEY=sua_chave_aqui
-NGROK_AUTHTOKEN=seu_token_aqui
-OLLAMA_BASE_URL=https://<url-ngrok>/api/generate
+```
+event: resposta
+data: { ... JSON abaixo ... }
 ```
 
-### 2. Frontend (disponível)
-
-```bash
-cd front
-npm install
-npm run dev
-# Acesse http://localhost:5173
-```
-
-O Vite faz proxy automático de `/api` → `http://localhost:8080` (Gateway). Certifique-se de que o Gateway está no ar antes de enviar perguntas.
-
-Para rodar os testes do frontend:
-
-```bash
-cd front
-npx vitest
-```
-
-### 3. API Gateway (estrutura disponível — endpoints em implementação)
-
-```bash
-cd gateway
-./mvnw spring-boot:run
-# Sobe na porta 8080
-```
-
-### 4. LLM no Google Colab (disponível)
-
-Abra o notebook `notebooks/manejo-pragas-colab.ipynb` no Google Colab com GPU T4 habilitada. Ele instala o Ollama, baixa o modelo e expõe a porta via ngrok. Copie a URL gerada para `OLLAMA_BASE_URL` no `.env`.
-
-### 5. Serviços completos (em implementação)
-
-```bash
-# Quando todos os serviços estiverem prontos:
-docker compose up
-```
-
----
-
-## Contrato da API do Orquestrador
-
-**`POST /consulta`**
-
-```bash
-curl -X POST http://localhost:8000/consulta \
-  -H "Content-Type: application/json" \
-  -d '{"pergunta": "Como tratar ferrugem asiática com chuva amanhã?"}'
-```
+### Orquestrador — `POST /consulta` (JSON)
 
 ```json
 // Request
 {
-  "pergunta": "Como tratar ferrugem asiática com chuva amanhã?"
+  "pergunta": "Como tratar ferrugem asiática com chuva amanhã em Lavras?"
 }
 
 // Response
 {
-  "resposta": "Recomenda-se aguardar janela sem chuva por 6h após aplicação...",
+  "resposta": "Texto gerado pela LLM...",
   "fontes": [
     {
-      "titulo": "Bula Azoxistrobina 250 SC — AGROFIT",
-      "trecho": "Não aplicar quando chuvas são previstas nas próximas 4 horas.",
-      "pagina": 3
+      "titulo": "Bula AGROFIT — Ferrugem Asiática da Soja",
+      "trecho": "Trecho recuperado pelo RAG...",
+      "pagina": 0
     }
   ],
-  "mcp_invocados": ["get_weather"]
+  "mcp_invocados": ["get_weather"],
+  "clima": {
+    "disponivel": true,
+    "cidade": "Lavras",
+    "temperatura_c": 22.5,
+    "sensacao_termica_c": 21.8,
+    "umidade_pct": 68,
+    "vento_kmh": 7.2,
+    "descricao": "céu limpo",
+    "nuvens_pct": 12
+  }
 }
 ```
 
-O Gateway repassa esse contrato ao Front End via SSE (`GET /api/consulta?pergunta=`).
+O campo `clima` só está presente quando a LLM decidiu invocar a tool `get_weather`.
+
+### MCP Clima — `POST /call-tool` (JSON)
+
+```json
+// Request
+{
+  "tool_name": "get_weather",
+  "arguments": { "cidade": "Lavras" }
+}
+
+// Response
+{
+  "disponivel": true,
+  "cidade": "Lavras",
+  "temperatura_c": 22.5,
+  "sensacao_termica_c": 21.8,
+  "umidade_pct": 68,
+  "vento_kmh": 7.2,
+  "descricao": "céu limpo",
+  "nuvens_pct": 12
+}
+```
 
 ---
 
@@ -165,32 +146,61 @@ O Gateway repassa esse contrato ao Front End via SSE (`GET /api/consulta?pergunt
 
 ```
 agro-mcp-rag-assistant/
-├── front/                          # Frontend React 19 + Vite 8 + TypeScript 6
-│   ├── src/
-│   │   ├── components/             # ChatWindow, ChatInput, MessageBubble, WeatherCard, FontesChips, Header, EmptyState, RespostaDisplay
-│   │   ├── hooks/
-│   │   │   └── useConsultaRAG.ts   # SSE consumer — abre EventSource ao Gateway (/api/consulta)
-│   │   └── types.ts                # Tipos do contrato /consulta
-│   ├── vite.config.ts              # Proxy /api → localhost:8080, config Vitest
-│   └── package.json
-├── gateway/                        # API Gateway Spring Boot 3.5 + Java 17
-│   ├── src/main/java/br/ufla/gcc129/gateway/
-│   │   └── GatewayApplication.java
-│   ├── src/main/resources/
-│   │   └── application.properties
-│   └── pom.xml                     # Spring Web, Actuator, Lombok
-├── notebooks/
-│   └── manejo-pragas-colab.ipynb   # Notebook Colab: instala Ollama, baixa modelo, expõe via ngrok
-├── docs/
-│   ├── negocio/
-│   │   └── proposta-projeto.md     # Proposta, problema, requisitos e escopo por fase
-│   ├── arquitetura/
-│   │   ├── especificacao-arquitetura.md  # Especificação completa da arquitetura
-│   │   └── poster_arquitetura.svg        # Poster do projeto
-│   └── entregas/
-│       └── relatorio-parcial.md    # Relatório da Fase 2
-└── README.md
+├── frontend/                 # React + Vite (porta 5173)
+├── gateway/                  # Spring Boot API Gateway (porta 9090)
+├── orchestrator/             # FastAPI Orquestrador (porta 8080)
+│   ├── app/
+│   │   ├── agent/            # Orquestrador + prompts + tool calling
+│   │   ├── rag/              # Ingestão e retrieval (ChromaDB)
+│   │   └── mcp_client/       # Cliente HTTP do MCP Clima
+│   └── scripts/              # Script de ingestão de documentos
+├── mcp-clima/                # MCP Server — clima (porta 8081)
+├── data/documentos/          # Base de conhecimento (bulas + manuais)
+├── notebooks/                # Notebook Colab (Ollama + ngrok)
+├── docs/                     # Documentação do projeto
+│   ├── negocio/              # Proposta e requisitos
+│   ├── arquitetura/          # Especificação + poster
+│   └── entregas/             # Relatórios de entrega
+├── docker-compose.yml        # Orquestração dos serviços locais
+└── .env.example              # Template de variáveis de ambiente
 ```
+
+---
+
+## Como Executar
+
+### 1. Google Colab (GPU)
+
+Abra o notebook `notebooks/manejo-pragas-colab.ipynb` no Google Colab e execute todas as células. Copie a URL ngrok gerada.
+
+### 2. Configuração
+
+```bash
+cp .env.example .env
+# Preencha OLLAMA_BASE_URL com a URL ngrok do passo anterior
+# Preencha OPENWEATHERMAP_API_KEY (opcional — degrada graciosamente)
+# Preencha NGROK_AUTHTOKEN
+```
+
+### 3. Backend Local (Docker)
+
+```bash
+# Subir todos os serviços
+docker compose up --build
+
+# Em outro terminal, ingerir os documentos no ChromaDB
+docker compose exec orchestrator python -m scripts.ingest_docs
+```
+
+### 4. Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Acesse `http://localhost:5173`.
 
 ---
 
@@ -198,20 +208,22 @@ agro-mcp-rag-assistant/
 
 | Fase | Entregável | Status |
 |---|---|---|
-| Fase 1 | Proposta, especificação de arquitetura, poster | ✅ Concluída |
-| Fase 2 | Notebook Colab (Ollama + ngrok), RAG, MCP Clima, Gateway, Front End, demo | 🔄 Em andamento |
-| Fase 3 | Orquestração completa, serviços de escrita, mensageria (RabbitMQ), relatório final | ⏳ Pendente |
+| Fase 1 | Proposta, especificação de arquitetura, poster | Concluída |
+| Fase 2 | Notebook Colab, RAG, MCP Clima, Gateway, Front End, demo | Em andamento |
+| Fase 3 | Serviços de escrita, mensageria (RabbitMQ), relatório final | Pendente |
 
 ### Estado atual (Fase 2)
 
 | Componente | Estado |
 |---|---|
 | Notebook Colab (Ollama + ngrok) | ✅ Concluído |
-| Front End mínimo (React + SSE) | ✅ Concluído |
-| API Gateway — endpoint SSE + Circuit Breaker | ⬜ Pendente |
-| Pipeline RAG (ChromaDB + ingestão) | ⬜ Pendente |
-| Orquestrador — `POST /consulta` | ⬜ Pendente |
-| MCP Clima (Docker + OpenWeatherMap) | ⬜ Pendente |
+| Pipeline RAG (ChromaDB + ingestão) | ✅ Concluído |
+| Orquestrador — `POST /consulta` com tool calling | ✅ Concluído |
+| MCP Clima (Docker + OpenWeatherMap) | ✅ Concluído |
+| API Gateway (Spring Boot + SSE + Circuit Breaker) | ✅ Concluído |
+| Front End (React + SSE) | ✅ Concluído |
+| Docker Compose com healthchecks | ✅ Concluído |
+| Demo gravada | ⬜ Pendente |
 
 ---
 
@@ -219,4 +231,4 @@ agro-mcp-rag-assistant/
 
 Projeto acadêmico — GCC129 Sistemas Distribuídos  
 **Professor:** Andre de Lima Salgado  
-**Instituição:** UFLA — Universidade Federal de Lavras
+**Instituição:** UFLA — Universidade Federal de Lavras  
