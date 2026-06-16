@@ -1,0 +1,37 @@
+TITULO: Bula AGROFIT — Controle da Lagarta-do-Cartucho do Milho (Spodoptera frugiperda)
+FONTE: AGROFIT/MAPA
+
+1. Identificação da Praga
+
+A lagarta-do-cartucho (Spodoptera frugiperda) é a principal praga do milho no Brasil, ocorrendo em todas as regiões produtoras. As lagartas jovens raspam a epiderme foliar, deixando áreas translúcidas ("janelas"). A partir do terceiro ínstar, penetram no cartucho da planta e consomem grandes porções do limbo foliar, produzindo o dano característico de folhas rasgadas e com excrementos. Em infestações severas, pode destruir completamente o ponto de crescimento, reduzindo a produtividade em até 60%.
+
+2. Ciclo Biológico
+
+O adulto é uma mariposa de hábitos noturnos que deposita massas de ovos (150–300 ovos) na face abaxial das folhas. O período larval dura 12 a 20 dias dependendo da temperatura. Temperaturas entre 25°C e 30°C aceleram o desenvolvimento. Em condições de seca prolongada, a população tende a aumentar pela redução de inimigos naturais (fungos entomopatogênicos).
+
+3. Nível de Controle (Threshold)
+
+Iniciar o controle quando 20% das plantas apresentarem folhas com sintomas de raspagem ou quando forem encontradas lagartas pequenas (< 1,5 cm) em 20% dos cartuchos amostrados. A amostragem deve ser feita em pelo menos 5 pontos da lavoura, com 20 plantas por ponto.
+
+4. Inseticidas Registrados (AGROFIT)
+
+4.1 Diamidas Antranílicas
+- Clorantraniliprole: dose de 50–100 mL/ha. PHI: 21 dias. Seletivo a inimigos naturais. Excelente ação por ingestão. Máximo: 2 aplicações por ciclo.
+- Ciantraniliprole: dose de 100–150 mL/ha. PHI: 21 dias. Ação translaminar. Máximo: 2 aplicações.
+
+4.2 Benzoiluréias (Reguladores de Crescimento)
+- Lufenurom: dose de 300 mL/ha. PHI: 15 dias. Atua por ingestão, inibindo a síntese de quitina. Eficaz contra lagartas jovens (até 3° ínstar). Máximo: 2 aplicações.
+- Novalurom: dose de 150 mL/ha. PHI: 14 dias. Similar ao Lufenurom. Máximo: 2 aplicações.
+
+4.3 Biológicos (Bacillus thuringiensis — Bt)
+- Bt var. kurstaki: dose de 500 mL/ha a 1 L/ha dependendo da formulação. Sem período de carência. Aplicar preferencialmente no final da tarde (UV degrada a toxina). Eficaz contra lagartas de 1° e 2° ínstares. Pode ser reaplicado sem restrição.
+
+5. Recomendações de Aplicação
+
+A aplicação deve atingir o interior do cartucho onde as lagartas se alimentam. Utilizar pontas de pulverização que produzam gotas médias a grossas para penetração no cartucho. Volume de calda recomendado: 200–300 L/ha para aplicação terrestre.
+
+ATENÇÃO: Evitar aplicação com temperatura acima de 30°C e umidade relativa abaixo de 55%, pois aumenta a evaporação das gotas antes de atingir o alvo. Não aplicar com ventos acima de 10 km/h. Aplicações no início da manhã ou final da tarde são preferíveis.
+
+6. Manejo de Resistência
+
+Populações de S. frugiperda no Brasil já apresentam resistência a diversos inseticidas organofosforados e piretroides. Alternar mecanismos de ação entre aplicações. Manter áreas de refúgio (mínimo 20% da área com milho não-Bt) para retardar a evolução de resistência às proteínas Bt.

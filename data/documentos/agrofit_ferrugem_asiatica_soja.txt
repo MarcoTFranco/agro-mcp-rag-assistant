@@ -1,0 +1,34 @@
+TITULO: Bula AGROFIT — Controle Químico da Ferrugem Asiática da Soja (Phakopsora pachyrhizi)
+FONTE: AGROFIT/MAPA
+
+1. Identificação da Doença
+
+A ferrugem asiática da soja, causada pelo fungo Phakopsora pachyrhizi, é considerada a doença mais destrutiva da cultura da soja no Brasil. Os primeiros sintomas aparecem nas folhas inferiores como pequenos pontos acastanhados (lesões do tipo "tan") na face abaxial. Sob condições favoráveis, as pústulas liberam uredosporos de coloração marrom-clara. A infecção severa causa desfolha prematura, abortamento de vagens e redução drástica da produtividade — perdas podem atingir 80% em lavouras sem controle.
+
+2. Condições Favoráveis
+
+A germinação dos uredosporos requer molhamento foliar contínuo de 6 a 12 horas e temperaturas entre 15°C e 28°C (ótimo: 20–25°C). Umidade relativa do ar acima de 75% favorece o desenvolvimento da doença. Períodos prolongados de chuva com temperaturas amenas são as condições mais críticas para epidemias.
+
+3. Fungicidas Registrados (AGROFIT)
+
+3.1 Triazóis + Estrobilurinas (mistura pronta)
+- Azoxistrobina + Ciproconazol: dose de 300 mL/ha de produto comercial. Intervalo de aplicação: 14 dias. Período de carência (PHI): 30 dias. Número máximo de aplicações por ciclo: 3.
+- Picoxistrobina + Ciproconazol: dose de 300 mL/ha. Intervalo: 14 dias. PHI: 25 dias. Máximo: 3 aplicações.
+- Trifloxistrobina + Protioconazol: dose de 400 mL/ha. Intervalo: 14–21 dias. PHI: 30 dias. Máximo: 3 aplicações. Considerado atualmente um dos padrões mais eficazes.
+
+3.2 Carboxamidas + Triazóis + Estrobilurinas (tríplice mistura)
+- Benzovindiflupir + Azoxistrobina + Ciproconazol: dose de 200 g/ha + 300 mL/ha. Intervalo: 14 dias. PHI: 28 dias. Indicado para áreas com alta pressão da doença e histórico de resistência a triazóis isolados.
+
+4. Momento de Aplicação
+
+A primeira aplicação preventiva deve ser realizada no estádio R1 (início do florescimento) ou ao detectar os primeiros sintomas na região, o que ocorrer primeiro. Aplicações curativas (após o aparecimento dos sintomas) apresentam eficácia reduzida em até 40% comparadas às preventivas.
+
+IMPORTANTE: Não aplicar fungicidas quando houver previsão de chuva nas próximas 2 horas após a aplicação. A chuva lava o produto da superfície foliar antes da absorção, reduzindo a eficácia em 50–70%. O ideal é que haja pelo menos 2 horas de tempo seco após a aplicação. Evitar aplicação com ventos superiores a 10 km/h para minimizar a deriva.
+
+5. Manejo de Resistência
+
+Alternar grupos químicos (triazóis, estrobilurinas, carboxamidas) entre as aplicações. Não repetir o mesmo mecanismo de ação em aplicações consecutivas. Monitorar a sensibilidade dos isolados locais através de laboratórios credenciados.
+
+6. Volume de Calda
+
+Volume mínimo recomendado: 150 L/ha para aplicação terrestre. Para aplicação aérea: mínimo de 20 L/ha com gotas de 150–250 µm (espectro médio). Utilizar adjuvantes conforme recomendação do fabricante.

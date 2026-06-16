@@ -1,0 +1,36 @@
+TITULO: Bula AGROFIT — Controle do Percevejo-Marrom da Soja (Euschistus heros)
+FONTE: AGROFIT/MAPA
+
+1. Identificação da Praga
+
+O percevejo-marrom (Euschistus heros) é o principal percevejo-praga da soja no Brasil, responsável por danos diretos aos grãos através da alimentação com o estilete (aparelho bucal sugador). Os adultos medem 10–12 mm de comprimento e possuem coloração marrom com espinho lateral no pronoto. As ninfas passam por 5 ínstares e são esverdeadas a amarronzadas.
+
+2. Danos
+
+Os percevejos se alimentam inserindo o estilete nas vagens e sugando os grãos em formação. Os danos incluem: chochamento de grãos, redução do peso de 1000 grãos, retenção foliar ("soja louca"), manchas nos grãos ("picada de percevejo") e transmissão de fungos como Nematospora coryli (levedura da mancha-fermento). Os danos são mais críticos nos estádios R3 a R6 (formação de vagens e enchimento de grãos).
+
+3. Nível de Controle
+
+O nível de ação é de 2 percevejos (maiores que 0,5 cm) por metro linear de soja, ou 2 percevejos por pano-de-batida. Para áreas de produção de sementes, o nível é mais rigoroso: 1 percevejo por metro linear. A amostragem deve ser realizada semanalmente a partir do estádio R1.
+
+4. Inseticidas Registrados (AGROFIT)
+
+4.1 Neonicotinóides + Piretroides (mistura pronta)
+- Imidacloprido + Beta-ciflutrina: dose de 750–1000 mL/ha. PHI: 21 dias. Ação de choque (piretróide) + residual (neonicotinóide). Máximo: 2 aplicações por ciclo.
+- Tiametoxam + Lambda-cialotrina: dose de 200–250 mL/ha. PHI: 21 dias. Amplo espectro. Máximo: 2 aplicações.
+
+4.2 Organofosforados
+- Acefato: dose de 500–750 g/ha de produto comercial. PHI: 14 dias. Ação sistêmica. Eficaz contra ninfas. Máximo: 2 aplicações. ATENÇÃO: produto em reavaliação toxicológica — verificar status regulatório atualizado.
+
+4.3 Biológicos
+- Beauveria bassiana: dose de 1–2 kg/ha (formulação em pó-molhável). Sem período de carência. Eficácia maior em condições de alta umidade (> 70% UR). Aplicar preferencialmente em dias nublados ou ao entardecer, pois a radiação UV degrada os conídios. Compatível com manejo integrado de pragas (MIP).
+
+5. Momento de Aplicação
+
+Aplicar preferencialmente no período da manhã quando os percevejos estão mais expostos no terço superior das plantas. Evitar aplicação no período mais quente do dia (11h–15h) quando os insetos se abrigam na base das plantas.
+
+IMPORTANTE: Não aplicar com previsão de chuva nas próximas 4 horas. Inseticidas de contato (piretroides) são os mais afetados pela lavagem. Umidade relativa acima de 60% é desejável no momento da aplicação para reduzir a evaporação.
+
+6. Manejo Integrado
+
+Priorizar o uso de parasitoides de ovos (Telenomus podisi e Trissolcus basalis) como primeira linha de controle biológico. Liberação inundativa: 5.000–10.000 parasitoides/ha no estádio R1. Reservar inseticidas químicos para quando o nível de controle for atingido após falha do controle biológico.

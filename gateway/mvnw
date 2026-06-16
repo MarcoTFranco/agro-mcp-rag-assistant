@@ -1,0 +1,19 @@
+#!/bin/sh
+# Maven Wrapper — baixa Maven automaticamente se necessário
+
+set -e
+
+MAVEN_VERSION="3.9.9"
+MAVEN_HOME="$HOME/.m2/wrapper/apache-maven-$MAVEN_VERSION"
+MVN_CMD="$MAVEN_HOME/bin/mvn"
+
+if [ ! -f "$MVN_CMD" ]; then
+    echo "Baixando Apache Maven $MAVEN_VERSION..."
+    MAVEN_URL="https://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz"
+    mkdir -p "$HOME/.m2/wrapper"
+    curl -sL "$MAVEN_URL" | tar -xz -C "$HOME/.m2/wrapper/"
+    echo "Maven $MAVEN_VERSION instalado em $MAVEN_HOME"
+fi
+
+export PATH="$MAVEN_HOME/bin:$PATH"
+exec mvn "$@"

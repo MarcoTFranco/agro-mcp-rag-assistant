@@ -5,3 +5,9 @@ target/
 .idea/
 .vscode/
 node_modules/
+chromadb_data/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+dist/
+.claude/
