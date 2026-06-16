@@ -1,0 +1,52 @@
+TITULO: Manejo Integrado de Pragas da Soja — Guia Prático
+FONTE: Embrapa Soja
+
+1. Introdução ao MIP-Soja
+
+O Manejo Integrado de Pragas (MIP) da soja é uma abordagem que combina diferentes métodos de controle (biológico, cultural, químico) de forma racional, priorizando a sustentabilidade econômica e ambiental. O princípio fundamental é: só aplicar inseticida quando a população da praga atingir o Nível de Controle (NC), e nunca de forma calendarizada.
+
+2. Principais Pragas e Níveis de Controle
+
+2.1 Lagartas Desfolhadoras
+- Anticarsia gemmatalis (lagarta-da-soja): NC = 40 lagartas grandes (> 1,5 cm) por pano-de-batida, ou 30% de desfolha no período vegetativo, ou 15% de desfolha no reprodutivo.
+- Chrysodeixis includens (lagarta-falsa-medideira): NC = 10 lagartas grandes por pano-de-batida. Mais difícil de controlar pois se alimenta no terço inferior e é tolerante a vários inseticidas.
+
+2.2 Percevejos Sugadores
+- Euschistus heros (percevejo-marrom): NC = 2 percevejos/metro linear (grão) ou 1/metro (semente).
+- Nezara viridula (percevejo-verde): NC = 2 percevejos/metro.
+- Piezodorus guildinii (percevejo-verde-pequeno): NC = 2 percevejos/metro. Mais danoso que os demais — cada indivíduo causa o dobro do dano do percevejo-marrom.
+
+3. Métodos de Amostragem
+
+3.1 Pano-de-Batida
+Estender um pano branco (1 m de comprimento) entre duas fileiras de soja. Sacudir vigorosamente as plantas sobre o pano e contar os insetos. Realizar em pelo menos 8 pontos da lavoura, distribuídos em zigue-zague. Anotar separadamente lagartas pequenas (< 1,5 cm) e grandes (> 1,5 cm).
+
+3.2 Amostragem Visual
+Para percevejos em estádios avançados (R5–R6), quando as plantas estão muito densas para o pano-de-batida, fazer contagem visual em 1 metro linear de fileira, examinando vagens e terço superior.
+
+4. Controle Biológico
+
+4.1 Baculovirus anticarsia (AgMNPV)
+Bioinseticida específico para a lagarta-da-soja. Dose: 50 lagartas equivalentes/ha (formulação líquida) ou conforme rótulo comercial. Aplicar quando as lagartas estiverem pequenas (até 1,5 cm). O vírus causa infecção letal em 5–7 dias. Não é eficaz contra Chrysodeixis includens.
+
+4.2 Trichogramma pretiosum
+Parasitoide de ovos liberado para controle de lagartas. Dose: 100.000 parasitoides/ha em cartelas distribuídas a cada 30–50 metros. Realizar 2–3 liberações semanais durante o período reprodutivo.
+
+4.3 Telenomus podisi
+Parasitoide de ovos de percevejos. Dose: 5.000–10.000 adultos/ha. Liberar a partir do estádio R1 quando forem detectadas as primeiras posturas de percevejos. Altamente específico e compatível com inseticidas seletivos.
+
+5. Controle Cultural
+
+- Vazio sanitário: eliminar plantas voluntárias de soja no entressafra para quebrar o ciclo de pragas e doenças.
+- Rotação de culturas: alternar soja com milho, algodão ou culturas de cobertura.
+- Época de semeadura: semeaduras antecipadas tendem a ter menor pressão de percevejos.
+- Cultivares de ciclo precoce: reduzem a exposição às pragas do final do ciclo.
+
+6. Quando Usar Controle Químico
+
+O inseticida deve ser a última ferramenta, não a primeira. Usar apenas quando:
+- O NC foi atingido E o controle biológico não foi suficiente.
+- Preferir inseticidas seletivos (diamidas, reguladores de crescimento) que preservem inimigos naturais.
+- Alternar mecanismos de ação para evitar resistência.
+- Respeitar o PHI (período de carência) antes da colheita.
+- Verificar as condições climáticas antes da aplicação: evitar chuva nas próximas 2h, vento > 10 km/h e temperatura > 30°C.

@@ -1,0 +1,72 @@
+TITULO: Boas Práticas de Aplicação de Defensivos Agrícolas — Manual Técnico
+FONTE: Embrapa Meio Ambiente
+
+1. Introdução
+
+A eficácia de um defensivo agrícola depende não apenas da escolha correta do produto, mas fundamentalmente das condições de aplicação. Aplicações realizadas em condições inadequadas resultam em desperdício de insumo, contaminação ambiental e falha no controle da praga ou doença. Este manual apresenta as condições ideais para maximizar a eficácia e minimizar os impactos ambientais.
+
+2. Condições Meteorológicas para Aplicação
+
+2.1 Temperatura
+- Faixa ideal: 15°C a 28°C
+- Acima de 30°C: a evaporação das gotas aumenta drasticamente, reduzindo o volume que atinge o alvo. Gotas finas podem evaporar completamente antes de atingir a folha.
+- Abaixo de 10°C: a absorção de produtos sistêmicos é reduzida, pois o metabolismo da planta desacelera.
+
+2.2 Umidade Relativa do Ar
+- Mínimo recomendado: 55%
+- Faixa ideal: 60–80%
+- Abaixo de 55%: o risco de evaporação é muito alto. Não aplicar.
+- Acima de 90%: pode ocorrer escorrimento do produto na folha (run-off), especialmente com volumes de calda altos.
+
+2.3 Velocidade do Vento
+- Faixa ideal: 3 a 10 km/h
+- Abaixo de 3 km/h: condição de calmaria associada a inversão térmica. As gotas ficam suspensas no ar e podem derivar para áreas não-alvo quando a inversão se desfaz. Não aplicar.
+- Acima de 10 km/h: deriva excessiva. As gotas são carregadas para fora da área-alvo, contaminando áreas vizinhas, cursos d'água e culturas adjacentes. Não aplicar.
+- Acima de 15 km/h: proibido aplicar em qualquer circunstância.
+
+2.4 Chuva
+- Não aplicar quando houver previsão de chuva nas próximas 2 horas (mínimo).
+- Para produtos de contato (fungicidas protetores, inseticidas de contato): idealmente 4 horas sem chuva após aplicação.
+- Para produtos sistêmicos: 2 horas sem chuva geralmente são suficientes para absorção.
+- Chuva superior a 20 mm lava praticamente qualquer produto da superfície foliar, exigindo reaplicação.
+
+3. Horários Recomendados
+
+- Manhã: das 6h às 10h — temperaturas amenas, umidade adequada, ventos leves.
+- Tarde: das 16h às 19h — temperatura em queda, umidade subindo.
+- Evitar: das 11h às 15h — pico de temperatura e menor umidade. Exceção: emergências fitossanitárias com alta pressão de pragas.
+- Noite: aplicações noturnas são possíveis com equipamento adequado, mas requerem atenção especial à inversão térmica (comum entre 18h e 8h).
+
+4. Tecnologia de Aplicação
+
+4.1 Tamanho de Gotas
+- Gotas finas (100–175 µm): melhor cobertura, mas maior risco de deriva e evaporação. Indicadas para fungicidas que requerem alta cobertura (ferrugem da soja).
+- Gotas médias (175–250 µm): equilíbrio entre cobertura e risco de deriva. Uso geral.
+- Gotas grossas (250–375 µm): menor cobertura, menor risco de deriva. Indicadas para herbicidas em pré-emergência e aplicações próximas a áreas sensíveis.
+- Gotas muito grossas (> 375 µm): apenas para herbicidas de solo. Baixa cobertura.
+
+4.2 Volume de Calda
+- Aplicação terrestre: 100–300 L/ha dependendo do alvo e da cultura.
+  - Fungicidas em soja: 150–200 L/ha (penetração no dossel)
+  - Inseticidas no cartucho do milho: 200–300 L/ha
+  - Herbicidas em pré-emergência: 100–150 L/ha
+- Aplicação aérea: 15–40 L/ha
+  - Requer gotas maiores e adjuvantes específicos
+  - Faixa de segurança obrigatória: 500 metros de povoações e 250 metros de mananciais.
+
+5. Adjuvantes
+
+- Óleo mineral ou vegetal: reduz a evaporação e melhora a penetração cuticular. Dose: 0,5–1,0 L/ha.
+- Espalhante adesivo: melhora a distribuição na folha e reduz o escorrimento. Dose conforme rótulo.
+- Antideriva: aumenta o tamanho das gotas, reduzindo a porcentagem de gotas finas. Essencial em aplicações próximas a áreas de preservação.
+
+6. Zonas de Proteção (Buffer Zones)
+
+- Nascentes e cursos d'água: manter faixa mínima de 30 metros sem aplicação (legislação federal — Código Florestal).
+- Apiários: distância mínima de 300 metros para inseticidas com toxicidade para abelhas.
+- Áreas de preservação permanente (APP): nunca aplicar sobre APPs.
+- Escolas e residências rurais: distância mínima de 300 metros para aplicação terrestre e 500 metros para aérea.
+
+7. Registro e Rastreabilidade
+
+Manter caderno de campo atualizado com: data, produto aplicado, dose, volume de calda, condições climáticas no momento da aplicação (temperatura, umidade, vento), nome do aplicador e número do receituário agronômico. Esses registros são exigidos para certificações de qualidade (GlobalGAP, Rainforest Alliance) e para rastreabilidade da cadeia produtiva.

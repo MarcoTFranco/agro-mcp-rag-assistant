@@ -1,0 +1,55 @@
+TITULO: Manejo Integrado de Pragas do Milho — Orientações Técnicas
+FONTE: Embrapa Milho e Sorgo
+
+1. Introdução
+
+O milho é atacado por um complexo de pragas ao longo de todo o ciclo, desde pragas de solo (corós, larva-alfinete) até pragas da parte aérea (lagarta-do-cartucho, cigarrinha-do-milho, percevejo-barriga-verde). O Manejo Integrado de Pragas (MIP) visa manter as populações abaixo do nível de dano econômico, utilizando preferencialmente métodos de baixo impacto ambiental.
+
+2. Principais Pragas e Danos
+
+2.1 Lagarta-do-Cartucho (Spodoptera frugiperda)
+Praga-chave do milho em todas as regiões brasileiras. Pode atacar desde a emergência até o pendoamento. NC = 20% de plantas com folhas raspadas (lagartas pequenas) ou com dano no cartucho. Perdas podem atingir 60% da produtividade em milho convencional sem controle.
+
+2.2 Cigarrinha-do-Milho (Dalbulus maidis)
+Vetor dos patógenos do enfezamento pálido (fitoplasma), enfezamento vermelho (espiroplasma) e virose-da-risca (Maize rayado fino virus). Os danos são indiretos — a transmissão de patógenos é o principal problema. Infecções no estádio V2–V4 causam as maiores perdas (até 90% em híbridos suscetíveis). Não há nível de controle bem definido; o foco deve ser manejo preventivo.
+
+2.3 Percevejo-Barriga-Verde (Dichelops melacanthus)
+Importante na safrinha, quando há palhada abundante de soja. Ninfas e adultos sugam a base das plântulas de milho, causando perfilhamento e deformação. NC = 0,5 percevejo por metro linear em milho até V3. Após V3, a planta tolera mais dano.
+
+3. Manejo da Lagarta-do-Cartucho
+
+3.1 Milho Bt (Tecnologia transgênica)
+Híbridos com proteínas inseticidas (Cry1Ab, Cry1F, Vip3Aa) oferecem controle contínuo contra lagartas. OBRIGATÓRIO manter áreas de refúgio: mínimo de 20% da área total plantada com milho convencional (não-Bt) na mesma propriedade. O refúgio deve estar a no máximo 800 metros do milho Bt. O objetivo é manter populações suscetíveis que se cruzem com eventuais indivíduos resistentes, retardando a evolução de resistência.
+
+ATENÇÃO: Já foram detectadas populações de S. frugiperda com resistência às proteínas Cry1F e Cry1Ab em várias regiões do Brasil. Híbridos com tecnologia Vip3Aa ainda apresentam alta eficácia. Monitorar a lavoura mesmo com milho Bt.
+
+3.2 Controle Biológico
+- Trichogramma pretiosum: liberação inundativa de 100.000 parasitoides/ha para controle de ovos. Realizar 3 liberações semanais a partir da detecção dos primeiros adultos de S. frugiperda.
+- Bacillus thuringiensis (Bt) spray: 500 mL–1 L/ha conforme formulação. Aplicar ao entardecer (UV degrada a toxina). Eficaz em lagartas até 2° ínstar.
+- Baculovírus (SfMNPV): específico para S. frugiperda. Aplicar em lagartas pequenas. Efeito mais lento (5–7 dias) que inseticidas químicos.
+
+3.3 Controle Químico
+Usar apenas quando o NC for atingido e métodos biológicos forem insuficientes. Preferir diamidas (clorantraniliprole, ciantraniliprole) por serem seletivas a inimigos naturais. Aplicação deve atingir o cartucho — usar pontas de pulverização com jato cônico e volume de calda de 200–300 L/ha.
+
+4. Manejo da Cigarrinha-do-Milho
+
+4.1 Estratégias Preventivas (mais eficazes)
+- Eliminação de plantas voluntárias de milho (tiguera) na entressafra — principal fonte de inóculo e de cigarrinhas.
+- Evitar semeaduras tardias de safrinha — populações de cigarrinhas aumentam ao longo da safrinha.
+- Utilizar híbridos com tolerância ou resistência genética ao enfezamento.
+- Tratamento de sementes com inseticidas sistêmicos (tiametoxam, imidacloprido) para proteção nos estádios iniciais (V1–V4).
+
+4.2 Controle Químico Foliar
+Aplicações foliares de neonicotinóides + piretroides podem reduzir a população, mas a eficácia é limitada pois novas cigarrinhas migram continuamente de áreas vizinhas. Priorizar o manejo cultural sobre o químico.
+
+5. Condições Climáticas e Aplicação
+
+- Temperatura ideal para aplicação: 15–28°C
+- Umidade relativa mínima: 55%
+- Velocidade do vento: 3–10 km/h (abaixo de 3 km/h ocorre inversão térmica; acima de 10 km/h, deriva excessiva)
+- Não aplicar com previsão de chuva nas próximas 2 horas
+- Horários recomendados: antes das 10h ou após as 16h
+
+6. Monitoramento
+
+Realizar amostragens semanais em pelo menos 5 pontos da lavoura. Para lagarta-do-cartucho, examinar 20 plantas por ponto, abrindo o cartucho. Para cigarrinha, examinar o colmo das plântulas nos estádios V1–V6. Registrar os dados para histórico e tomada de decisão baseada em evidências.
