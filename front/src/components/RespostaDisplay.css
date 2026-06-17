@@ -5,3 +5,30 @@
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+.resposta-display p {
+  margin-bottom: 0.75em;
+}
+
+.resposta-display p:last-child {
+  margin-bottom: 0;
+}
+
+.resposta-display ol,
+.resposta-display ul {
+  padding-left: 1.25rem;
+  margin-bottom: 0.75em;
+}
+
+.resposta-display li {
+  margin-bottom: 0.25em;
+}
+
+.resposta-display strong {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.resposta-display em {
+  font-style: italic;
+}

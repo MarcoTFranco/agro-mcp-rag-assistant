@@ -1,19 +1,15 @@
 .fontes-chips {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 10px;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .fontes-chips__label {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  padding-top: 2px;
-  flex-shrink: 0;
 }
 
 .fontes-chips__list {
@@ -24,11 +20,54 @@
 }
 
 .fontes-chips__chip {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  padding: 2px 8px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  padding: 3px 10px;
+  background: var(--accent-light);
+  border: none;
+  border-radius: 12px;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.fontes-chips__chip--expanded {
+  border-radius: 8px;
+  padding: 8px 10px;
+  width: 100%;
+  border: 1px solid #52B788;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--accent-light);
+}
+
+.fontes-chips__chip-header {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: var(--font-sans);
+}
+
+.fontes-chips__chip-titulo {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #1A4731;
+}
+
+.fontes-chips__chip-pagina {
+  font-size: 0.625rem;
   color: var(--text-muted);
+  font-weight: 400;
+}
+
+.fontes-chips__chip-trecho {
+  font-size: 0.625rem;
+  color: var(--accent);
+  font-style: italic;
+  line-height: 1.5;
+  margin: 0;
 }

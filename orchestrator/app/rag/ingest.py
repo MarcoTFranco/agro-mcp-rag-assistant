@@ -26,10 +26,10 @@ def parse_document(file_path: str) -> dict:
     return {"titulo": titulo, "fonte": fonte, "conteudo": conteudo}
 
 
-def split_text(text: str, chunk_size: int = 500, chunk_overlap: int = 50) -> list[str]:
+def split_text(text: str, chunk_size: int = 500, chunk_overlap: int = 50) -> tuple[list[str], list[str]]:
     """Divide texto em chunks por parágrafos, respeitando chunk_size e overlap."""
     paragraphs = text.split("\n\n")
-    chunks = []
+    clean_chunks = []
     current = ""
 
     for para in paragraphs:
@@ -41,7 +41,7 @@ def split_text(text: str, chunk_size: int = 500, chunk_overlap: int = 50) -> lis
             current = f"{current}\n\n{para}" if current else para
         else:
             if current:
-                chunks.append(current)
+                clean_chunks.append(current)
             # Se o parágrafo sozinho é maior que chunk_size, divide por sentenças
             if len(para) > chunk_size:
                 sentences = para.replace(". ", ".\n").split("\n")
@@ -51,25 +51,28 @@ def split_text(text: str, chunk_size: int = 500, chunk_overlap: int = 50) -> lis
                         sub = f"{sub} {sent}" if sub else sent
                     else:
                         if sub:
-                            chunks.append(sub)
+                            clean_chunks.append(sub)
                         sub = sent
                 current = sub
             else:
                 current = para
 
     if current:
-        chunks.append(current)
+        clean_chunks.append(current)
 
-    # Aplica overlap: cada chunk inclui os últimos caracteres do anterior
-    if chunk_overlap > 0 and len(chunks) > 1:
-        overlapped = [chunks[0]]
-        for i in range(1, len(chunks)):
-            prev = chunks[i - 1]
+    # Gera vetores com overlap para melhor continuidade semântica no embedding.
+    # Os chunks limpos (clean_chunks) são usados como documents no ChromaDB —
+    # como embeddings= é passado explicitamente, documents= é só texto exibido.
+    if chunk_overlap > 0 and len(clean_chunks) > 1:
+        embedding_chunks = [clean_chunks[0]]
+        for i in range(1, len(clean_chunks)):
+            prev = clean_chunks[i - 1]
             suffix = prev[-chunk_overlap:] if len(prev) >= chunk_overlap else prev
-            overlapped.append(suffix + " " + chunks[i])
-        chunks = overlapped
+            embedding_chunks.append(suffix + " " + clean_chunks[i])
+    else:
+        embedding_chunks = list(clean_chunks)
 
-    return chunks
+    return embedding_chunks, clean_chunks
 
 
 def ingest_documents():
@@ -105,18 +108,18 @@ def ingest_documents():
     for filename in files:
         filepath = os.path.join(data_dir, filename)
         doc = parse_document(filepath)
-        chunks = split_text(doc["conteudo"])
+        embedding_texts, display_texts = split_text(doc["conteudo"])
 
-        ids = [f"{filename}_{i}" for i in range(len(chunks))]
+        ids = [f"{filename}_{i}" for i in range(len(display_texts))]
         metadatas = [
             {"titulo": doc["titulo"], "fonte": doc["fonte"], "pagina": i}
-            for i in range(len(chunks))
+            for i in range(len(display_texts))
         ]
-        embeddings = embedding_fn(chunks)
+        embeddings = embedding_fn(embedding_texts)
 
-        collection.add(documents=chunks, ids=ids, metadatas=metadatas, embeddings=embeddings)
-        total_chunks += len(chunks)
-        print(f"  [{filename}] {len(chunks)} chunks ingeridos")
+        collection.add(documents=display_texts, ids=ids, metadatas=metadatas, embeddings=embeddings)
+        total_chunks += len(display_texts)
+        print(f"  [{filename}] {len(display_texts)} chunks ingeridos")
 
     print(f"\nIngestão concluída: {len(files)} documentos, {total_chunks} chunks total")
     print(f"Collection: {settings.collection_name}")

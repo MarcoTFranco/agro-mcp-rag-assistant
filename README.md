@@ -62,7 +62,7 @@ API Gateway (Spring Boot + CB)         Ollama /api/chat
 | Camada | Tecnologia |
 |---|---|
 | Frontend | React + `@microsoft/fetch-event-source` (SSE) |
-| API Gateway | Java 21 + Spring Boot 3.4 + Resilience4j (Circuit Breaker) + RestClient |
+| API Gateway | Java 21 + Spring Boot 3.5 + Resilience4j (Circuit Breaker) + RestClient |
 | Orquestrador | Python + FastAPI + httpx |
 | Vector Store | ChromaDB (local, persistência em disco) |
 | Embeddings | sentence-transformers `paraphrase-multilingual-MiniLM-L12-v2` (offline) |
@@ -89,7 +89,11 @@ data: { ... JSON abaixo ... }
 ```json
 // Request
 {
-  "pergunta": "Como tratar ferrugem asiática com chuva amanhã em Lavras?"
+  "pergunta": "Como tratar ferrugem asiática com chuva amanhã em Lavras?",
+  "historico": [
+    { "role": "user", "content": "Pergunta anterior..." },
+    { "role": "assistant", "content": "Resposta anterior..." }
+  ]
 }
 
 // Response
@@ -142,31 +146,6 @@ O campo `clima` só está presente quando a LLM decidiu invocar a tool `get_weat
 
 ---
 
-## Estrutura do Repositório
-
-```
-agro-mcp-rag-assistant/
-├── frontend/                 # React + Vite (porta 5173)
-├── gateway/                  # Spring Boot API Gateway (porta 9090)
-├── orchestrator/             # FastAPI Orquestrador (porta 8080)
-│   ├── app/
-│   │   ├── agent/            # Orquestrador + prompts + tool calling
-│   │   ├── rag/              # Ingestão e retrieval (ChromaDB)
-│   │   └── mcp_client/       # Cliente HTTP do MCP Clima
-│   └── scripts/              # Script de ingestão de documentos
-├── mcp-clima/                # MCP Server — clima (porta 8081)
-├── data/documentos/          # Base de conhecimento (bulas + manuais)
-├── notebooks/                # Notebook Colab (Ollama + ngrok)
-├── docs/                     # Documentação do projeto
-│   ├── negocio/              # Proposta e requisitos
-│   ├── arquitetura/          # Especificação + poster
-│   └── entregas/             # Relatórios de entrega
-├── docker-compose.yml        # Orquestração dos serviços locais
-└── .env.example              # Template de variáveis de ambiente
-```
-
----
-
 ## Como Executar
 
 ### 1. Google Colab (GPU)
@@ -195,35 +174,12 @@ docker compose exec orchestrator python -m scripts.ingest_docs
 ### 4. Frontend
 
 ```bash
-cd frontend
+cd front
 npm install
 npm run dev
 ```
 
 Acesse `http://localhost:5173`.
-
----
-
-## Fases do Projeto
-
-| Fase | Entregável | Status |
-|---|---|---|
-| Fase 1 | Proposta, especificação de arquitetura, poster | Concluída |
-| Fase 2 | Notebook Colab, RAG, MCP Clima, Gateway, Front End, demo | Em andamento |
-| Fase 3 | Serviços de escrita, mensageria (RabbitMQ), relatório final | Pendente |
-
-### Estado atual (Fase 2)
-
-| Componente | Estado |
-|---|---|
-| Notebook Colab (Ollama + ngrok) | ✅ Concluído |
-| Pipeline RAG (ChromaDB + ingestão) | ✅ Concluído |
-| Orquestrador — `POST /consulta` com tool calling | ✅ Concluído |
-| MCP Clima (Docker + OpenWeatherMap) | ✅ Concluído |
-| API Gateway (Spring Boot + SSE + Circuit Breaker) | ✅ Concluído |
-| Front End (React + SSE) | ✅ Concluído |
-| Docker Compose com healthchecks | ✅ Concluído |
-| Demo gravada | ⬜ Pendente |
 
 ---
 

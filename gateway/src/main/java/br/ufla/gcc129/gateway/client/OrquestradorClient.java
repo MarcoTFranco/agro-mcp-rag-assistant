@@ -30,13 +30,17 @@ public class OrquestradorClient {
 
     @SuppressWarnings("unchecked")
     @CircuitBreaker(name = "orchestrator", fallbackMethod = "fallback")
-    public Map<String, Object> consultar(String pergunta) {
+    public Map<String, Object> consultar(String pergunta, Object historico) {
         log.info("Chamando Orquestrador: {}", pergunta.substring(0, Math.min(80, pergunta.length())));
+
+        Map<String, Object> requestBody = historico != null
+                ? Map.of("pergunta", pergunta, "historico", historico)
+                : Map.of("pergunta", pergunta);
 
         Map<String, Object> response = restClient.post()
                 .uri("/consulta")
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Map.of("pergunta", pergunta))
+                .body(requestBody)
                 .retrieve()
                 .body(Map.class);
 
@@ -45,7 +49,7 @@ public class OrquestradorClient {
     }
 
     @SuppressWarnings("unused")
-    private Map<String, Object> fallback(String pergunta, Throwable t) {
+    private Map<String, Object> fallback(String pergunta, Object historico, Throwable t) {
         log.warn("Circuit Breaker ativado | causa={}", t.getMessage());
         return Map.of(
                 "resposta", "Serviço temporariamente indisponível. O sistema detectou falhas "

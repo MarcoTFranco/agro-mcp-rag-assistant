@@ -11,3 +11,4 @@ chromadb_data/
 !.mvn/wrapper/maven-wrapper.jar
 dist/
 .claude/
+CLAUDE.md
