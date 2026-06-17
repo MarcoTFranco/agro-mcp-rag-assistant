@@ -47,13 +47,13 @@ export function useConsultaRAG(): UseConsultaRAGReturn {
       setMessages(prev =>
         prev.map(m =>
           m.id === idAssistente && m.loading
-            ? { ...m, loading: false, erro: 'O servidor demorou demais para responder. Tente novamente.' }
+            ? { ...m, loading: false, erro: 'O servidor demorou demais para responder.' }
             : m
         )
       )
       loadingRef.current = false
       setLoading(false)
-    }, 30_000)
+    }, 120_000)
 
     const msgUsuario: Message = {
       id: gerarId(),
@@ -137,7 +137,7 @@ export function useConsultaRAG(): UseConsultaRAGReturn {
           if (status >= 400 && status < 500) throw err
         }
         // Demais erros (rede, 5xx): fetchEventSource retenta automaticamente
-        // O timeout de 30s acima garante que não fica tentando para sempre
+        // O timeout de 90s acima garante que não fica tentando para sempre
       },
 
       onclose() {
