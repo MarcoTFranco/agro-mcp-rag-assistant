@@ -5,3 +5,4 @@ sentence-transformers==4.1.0
 pydantic-settings==2.9.1
 httpx==0.28.1
 python-dotenv==1.1.0
+pypdf==4.2.0
