@@ -28,22 +28,7 @@ Quando o usuário descreve um sintoma ou praga em linguagem natural, o sistema:
 
 ## Arquitetura
 
-O sistema é dividido em dois ambientes de execução com responsabilidades isoladas:
-
-```
-Backend Local                          Google Colab (GPU)
-─────────────────────────────────      ───────────────────
-Front End (React + SSE)                ngrok (túnel HTTP)
-    │                                       │
-API Gateway (Spring Boot + CB)         Ollama /api/chat
-    │  SSE (event: resposta)                │
-    │  ┌────────────────────┐          tool calling
-    └──► Orquestrador (FastAPI)  ◄─────────┘
-           ├── RAG (ChromaDB)  ◄── Bulas AGROFIT + Manuais Embrapa
-           └── MCP Clima       ◄── OpenWeatherMap API
-```
-
-**Por que dois ambientes?** O Google Colab oferece GPU T4 gratuita para inferência do LLM. O ngrok expõe a porta do Ollama como URL pública, resolvendo a ausência de IP estático. Separar os ambientes garante que uma reinicialização do Colab (a cada ~12h) não cause perda de dados: o ChromaDB e o estado do Orquestrador permanecem no backend local.
+![Poster de arquitetura do sistema](docs/arquitetura/poster_arquitetura.svg)
 
 ### Propriedades de Sistemas Distribuídos atendidas
 
