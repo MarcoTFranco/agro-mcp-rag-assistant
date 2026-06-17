@@ -123,7 +123,7 @@ describe('useConsultaRAG', () => {
     expect(assistantMsg?.mcpInvocados).toContain('mcp-clima')
   })
 
-  it('marca erro de timeout após 30 segundos sem resposta', () => {
+  it('marca erro de timeout após 90 segundos sem resposta', () => {
     const { result } = renderHook(() => useConsultaRAG())
 
     act(() => {
@@ -134,7 +134,7 @@ describe('useConsultaRAG', () => {
     expect(result.current.loading).toBe(true)
 
     act(() => {
-      vi.advanceTimersByTime(30_000)
+      vi.advanceTimersByTime(90_000)
     })
 
     const assistantMsg = result.current.messages[1]
