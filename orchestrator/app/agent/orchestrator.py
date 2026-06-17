@@ -7,6 +7,7 @@ a LLM decide autonomamente quando invocar ferramentas MCP.
 import json
 import logging
 import re
+import types
 
 import httpx
 
@@ -79,7 +80,11 @@ def _format_rag_context(fontes: list[dict]) -> str:
     return RAG_CONTEXT_TEMPLATE.format(contexto_rag=contexto)
 
 
-async def _chat_ollama(messages: list[dict], tools: list[dict] | None = None) -> dict:
+async def _chat_ollama(
+    messages: list[dict],
+    tools: list[dict] | None = None,
+    timeout: int = 120,
+) -> dict:
     """Chama o Ollama via /api/chat. Retorna o message do assistente."""
     url = f"{settings.ollama_base_url}/api/chat"
 
@@ -93,7 +98,7 @@ async def _chat_ollama(messages: list[dict], tools: list[dict] | None = None) ->
 
     headers = {"ngrok-skip-browser-warning": "true"}
 
-    async with httpx.AsyncClient(timeout=120) as client:
+    async with httpx.AsyncClient(timeout=timeout) as client:
         response = await client.post(url, json=payload, headers=headers)
         response.raise_for_status()
         return response.json()["message"]
@@ -120,27 +125,36 @@ def _sanitize_response(text: str) -> str:
     """Remove blocos JSON de tool call que o LLM vazar no texto da resposta.
 
     Localiza cada '{' no texto, tenta decodificar um objeto JSON completo a
-    partir dali (json.JSONDecoder.raw_decode lida com qualquer profundidade de
-    aninhamento) e remove o bloco se for um dict com chave "name" do tipo str.
+    partir dali e remove o bloco apenas se for um dict com "name" (str) e
+    "arguments" — assinatura de tool call. Dicts com "name" mas sem
+    "arguments" (e.g. {"name": "Lavras"}) são preservados.
     Texto livre com '{' que não forma JSON válido é preservado intacto.
     """
+    if not text:
+        return text if text is not None else ""
     decoder = json.JSONDecoder()
-    result = []
+    segments = []
     i = 0
     removed = False
     while i < len(text):
-        if text[i] == '{':
-            try:
-                obj, end = decoder.raw_decode(text, i)
-                if isinstance(obj, dict) and isinstance(obj.get("name"), str):
-                    removed = True
-                    i = end
-                    continue
-            except (json.JSONDecodeError, ValueError):
-                pass
-        result.append(text[i])
-        i += 1
-    cleaned = re.sub(r'\n{3,}', '\n\n', ''.join(result)).strip()
+        j = text.find('{', i)
+        if j == -1:
+            segments.append(text[i:])
+            break
+        segments.append(text[i:j])
+        try:
+            obj, end = decoder.raw_decode(text, j)
+            if (isinstance(obj, dict)
+                    and isinstance(obj.get("name"), str)
+                    and "arguments" in obj):
+                removed = True
+                i = end
+                continue
+        except (json.JSONDecodeError, ValueError):
+            pass
+        segments.append('{')
+        i = j + 1
+    cleaned = re.sub(r'\n{3,}', '\n\n', ''.join(segments)).strip()
     if removed:
         logger.warning("JSON de tool call removido da resposta do LLM")
     return cleaned
@@ -151,7 +165,7 @@ async def _rewrite_query(pergunta: str, historico: list) -> str:
     historico_txt = "\n".join(f"{h.role}: {h.content}" for h in historico)
     prompt = REWRITE_PROMPT.format(historico=historico_txt, pergunta=pergunta)
     try:
-        msg = await _chat_ollama([{"role": "user", "content": prompt}])
+        msg = await _chat_ollama([{"role": "user", "content": prompt}], timeout=10)
         rewritten = msg.get("content", "").strip()
         if rewritten:
             logger.info("Query reescrita: %s → %s", pergunta[:60], rewritten[:60])
@@ -176,7 +190,7 @@ async def consultar(pergunta: str, historico: list | None = None) -> dict:
     # Normaliza itens do histórico: aceita dicts {"role": ..., "content": ...}
     # além de objetos Pydantic com atributos .role / .content
     historico = [
-        type("H", (), {"role": h["role"], "content": h["content"]})()
+        types.SimpleNamespace(role=h.get("role", "user"), content=h.get("content", ""))
         if isinstance(h, dict) else h
         for h in historico
     ]
@@ -207,7 +221,7 @@ async def consultar(pergunta: str, historico: list | None = None) -> dict:
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
-        *[{"role": h.role, "content": h.content} for h in historico],
+        *[{"role": h.role, "content": _sanitize_response(h.content)} for h in historico],
         {"role": "user", "content": user_content},
     ]
 

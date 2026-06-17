@@ -12,3 +12,6 @@ chromadb_data/
 dist/
 .claude/
 CLAUDE.md
+.superpowers
+docs/superpowers/
+.DS_Store
