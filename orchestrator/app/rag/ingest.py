@@ -109,6 +109,9 @@ def ingest_documents():
         filepath = os.path.join(data_dir, filename)
         doc = parse_document(filepath)
         embedding_texts, display_texts = split_text(doc["conteudo"])
+        assert len(embedding_texts) == len(display_texts), (
+            f"split_text length mismatch: {len(embedding_texts)} embeddings != {len(display_texts)} display"
+        )
 
         ids = [f"{filename}_{i}" for i in range(len(display_texts))]
         metadatas = [
