@@ -1,4 +1,5 @@
 import { RespostaDisplay } from './RespostaDisplay'
+import { BubbleFooter } from './BubbleFooter'
 import './MessageBubble.css'
 import type { Message } from '../types'
 
@@ -11,7 +12,11 @@ export function MessageBubble({ message, onReenviar }: MessageBubbleProps) {
   const isUser = message.role === 'user'
 
   return (
-    <div role="article" className={`bubble bubble--${message.role}`} aria-label={isUser ? 'Sua pergunta' : 'Resposta do assistente'}>
+    <div
+      role="article"
+      className={`bubble bubble--${message.role}`}
+      aria-label={isUser ? 'Sua pergunta' : 'Resposta do assistente'}
+    >
       {isUser ? (
         <p className="bubble__user-text">{message.content}</p>
       ) : (
@@ -36,7 +41,16 @@ export function MessageBubble({ message, onReenviar }: MessageBubbleProps) {
               )}
             </div>
           ) : (
-            <RespostaDisplay content={message.content} />
+            <>
+              <div className="bubble__assistant-content">
+                <RespostaDisplay content={message.content} />
+              </div>
+              <BubbleFooter
+                fontes={message.fontes}
+                mcpInvocados={message.mcpInvocados}
+                clima={message.clima}
+              />
+            </>
           )}
         </div>
       )}
