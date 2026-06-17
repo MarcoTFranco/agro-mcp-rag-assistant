@@ -11,13 +11,15 @@ server:
       force: true
 
 orchestrator:
-  base-url: ${ORCHESTRATOR_BASEURL:http://localhost:8080}
+  base-url: ${ORCHESTRATOR_BASEURL:http://orchestrator:8080}
 
 gateway:
   sse:
     timeout: 90000
   cors:
     allowed-origin: ${GATEWAY_CORS_ORIGIN:http://localhost:5173}
+  rate-limit:
+    requests-per-second: ${GATEWAY_RATE_LIMIT_RPS:10}
 
 resilience4j:
   circuitbreaker:
