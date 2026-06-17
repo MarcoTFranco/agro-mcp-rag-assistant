@@ -5,26 +5,41 @@ from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunct
 from app.config import settings
 
 
-def parse_document(file_path: str) -> dict:
-    """Lê um arquivo .txt e extrai titulo, fonte e conteúdo."""
-    with open(file_path, "r", encoding="utf-8") as f:
-        lines = f.readlines()
+import pypdf
 
+def parse_document(file_path: str) -> dict:
+    """Lê um arquivo .pdf, extrai o texto de todas as páginas e coleta metadados."""
+    reader = pypdf.PdfReader(file_path)
+    
+    # Tenta recuperar os metadados internos do PDF
+    meta = reader.metadata
     titulo = ""
     fonte = ""
-    content_start = 0
+    
+    if meta:
+        if meta.title:
+            titulo = meta.title
+        if meta.author:
+            fonte = meta.author
 
-    for i, line in enumerate(lines):
-        if line.startswith("TITULO:"):
-            titulo = line.replace("TITULO:", "").strip()
-        elif line.startswith("FONTE:"):
-            fonte = line.replace("FONTE:", "").strip()
-            content_start = i + 1
-            break
+    # Fallbacks caso o PDF não possua metadados preenchidos
+    if not titulo:
+        # Usa o nome do arquivo sem a extensão como título
+        titulo = os.path.splitext(os.path.basename(file_path))[0].replace("_", " ").title()
+    if not fonte:
+        fonte = "Embrapa / Infoteca-e"
 
-    conteudo = "".join(lines[content_start:]).strip()
+    # Extrai o texto de cada página do PDF
+    conteudo_completo = []
+    for page in reader.pages:
+        texto_pagina = page.extract_text()
+        if texto_pagina:
+            conteudo_completo.append(texto_pagina)
+            
+    # Junta todo o texto separando as páginas por quebras de linha duplas
+    conteudo = "\n\n".join(conteudo_completo).strip()
+    
     return {"titulo": titulo, "fonte": fonte, "conteudo": conteudo}
-
 
 def split_text(text: str, chunk_size: int = 500, chunk_overlap: int = 50) -> tuple[list[str], list[str]]:
     """Divide texto em chunks por parágrafos, respeitando chunk_size e overlap."""
@@ -81,9 +96,9 @@ def ingest_documents():
     if not os.path.isdir(data_dir):
         raise FileNotFoundError(f"Diretório de dados não encontrado: {data_dir}")
 
-    files = [f for f in os.listdir(data_dir) if f.endswith(".txt")]
+    files = [f for f in os.listdir(data_dir) if f.endswith(".pdf")]
     if not files:
-        raise FileNotFoundError(f"Nenhum arquivo .txt encontrado em {data_dir}")
+        raise FileNotFoundError(f"Nenhum arquivo .pdf encontrado em {data_dir}")
 
     embedding_fn = SentenceTransformerEmbeddingFunction(
         model_name=settings.embedding_model
@@ -107,22 +122,37 @@ def ingest_documents():
 
     for filename in files:
         filepath = os.path.join(data_dir, filename)
-        doc = parse_document(filepath)
-        embedding_texts, display_texts = split_text(doc["conteudo"])
-        assert len(embedding_texts) == len(display_texts), (
-            f"split_text length mismatch: {len(embedding_texts)} embeddings != {len(display_texts)} display"
-        )
+        
+        # Abre o leitor de PDF diretamente no loop principal
+        reader = pypdf.PdfReader(filepath)
+        meta = reader.metadata
+        titulo = meta.title if meta and meta.title else os.path.splitext(filename)[0]
+        fonte = meta.author if meta and meta.author else "Embrapa"
 
-        ids = [f"{filename}_{i}" for i in range(len(display_texts))]
-        metadatas = [
-            {"titulo": doc["titulo"], "fonte": doc["fonte"], "pagina": i}
-            for i in range(len(display_texts))
-        ]
-        embeddings = embedding_fn(embedding_texts)
+        # Ingerir chunk por chunk, mapeando a página real
+        for num_pagina, page in enumerate(reader.pages, start=1):
+            texto_pagina = page.extract_text()
+            if not texto_pagina or not texto_pagina.strip():
+                continue
+                
+            # Divide apenas o texto desta página específica
+            embedding_texts, display_texts = split_text(texto_pagina)
+            
+            ids = [f"{filename}_p{num_pagina}_{i}" for i in range(len(display_texts))]
+            metadatas = [
+                {
+                    "titulo": titulo, 
+                    "fonte": fonte, 
+                    "pagina": num_pagina  # Agora guarda o número real da página do PDF!
+                }
+                for _ in range(len(display_texts))
+            ]
+            embeddings = embedding_fn(embedding_texts)
 
-        collection.add(documents=display_texts, ids=ids, metadatas=metadatas, embeddings=embeddings)
-        total_chunks += len(display_texts)
-        print(f"  [{filename}] {len(display_texts)} chunks ingeridos")
+            collection.add(documents=display_texts, ids=ids, metadatas=metadatas, embeddings=embeddings)
+            total_chunks += len(display_texts)
+            
+        print(f"  [{filename}] Concluído o processamento de páginas.")
 
     print(f"\nIngestão concluída: {len(files)} documentos, {total_chunks} chunks total")
     print(f"Collection: {settings.collection_name}")
