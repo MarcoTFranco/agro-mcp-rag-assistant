@@ -1,3 +1,4 @@
+import Markdown from 'react-markdown'
 import './RespostaDisplay.css'
 
 interface RespostaDisplayProps {
@@ -6,8 +7,8 @@ interface RespostaDisplayProps {
 
 export function RespostaDisplay({ content }: RespostaDisplayProps) {
   return (
-    <p className="resposta-display">
-      {content}
-    </p>
+    <div className="resposta-display">
+      <Markdown>{content}</Markdown>
+    </div>
   )
 }
