@@ -1,6 +1,4 @@
 import { RespostaDisplay } from './RespostaDisplay'
-import { WeatherCard } from './WeatherCard'
-import { FontesChips } from './FontesChips'
 import './MessageBubble.css'
 import type { Message } from '../types'
 
@@ -38,11 +36,7 @@ export function MessageBubble({ message, onReenviar }: MessageBubbleProps) {
               )}
             </div>
           ) : (
-            <>
-              <RespostaDisplay content={message.content} />
-              <WeatherCard visivel={message.mcpInvocados.includes('mcp-clima')} />
-              <FontesChips fontes={message.fontes} />
-            </>
+            <RespostaDisplay content={message.content} />
           )}
         </div>
       )}

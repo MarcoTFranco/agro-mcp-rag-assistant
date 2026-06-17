@@ -33,13 +33,15 @@ public class ConsultaController {
     }
 
     @PostMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public ResponseEntity<SseEmitter> consultar(@RequestBody Map<String, String> body) {
-        String pergunta = body.getOrDefault("pergunta", "").trim();
+    public ResponseEntity<SseEmitter> consultar(@RequestBody Map<String, Object> body) {
+        String pergunta = (body.get("pergunta") instanceof String s ? s : "").trim();
 
         if (pergunta.isEmpty()) {
             log.warn("Consulta recebida com pergunta vazia");
             return ResponseEntity.badRequest().build();
         }
+
+        Object historico = body.get("historico");
 
         log.info("Nova consulta SSE: {}", pergunta.substring(0, Math.min(80, pergunta.length())));
 
@@ -47,7 +49,7 @@ public class ConsultaController {
 
         executor.execute(() -> {
             try {
-                Map<String, Object> resultado = orquestradorClient.consultar(pergunta);
+                Map<String, Object> resultado = orquestradorClient.consultar(pergunta, historico);
 
                 String json = objectMapper.writeValueAsString(resultado);
                 emitter.send(SseEmitter.event()

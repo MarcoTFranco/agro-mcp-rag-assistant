@@ -1,5 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { fetchEventSource } from '@microsoft/fetch-event-source'
 import type { Message, RespostaConsulta } from '../types'
+
+const GATEWAY_URL = 'http://localhost:9090/consulta'
 
 function gerarId(): string {
   return crypto.randomUUID()
@@ -15,15 +18,13 @@ interface UseConsultaRAGReturn {
 export function useConsultaRAG(): UseConsultaRAGReturn {
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
-  const sourceRef = useRef<EventSource | null>(null)
-  const timeoutRef = useRef<ReturnType<typeof window.setTimeout> | null>(null)
+  const abortRef = useRef<AbortController | null>(null)
   const ultimaPerguntaRef = useRef<string>('')
   const loadingRef = useRef(false)
 
   useEffect(() => {
     return () => {
-      sourceRef.current?.close()
-      if (timeoutRef.current !== null) clearTimeout(timeoutRef.current)
+      abortRef.current?.abort()
     }
   }, [])
 
@@ -31,12 +32,28 @@ export function useConsultaRAG(): UseConsultaRAGReturn {
     if (loadingRef.current) return
 
     ultimaPerguntaRef.current = pergunta
-    sourceRef.current?.close()
-    if (timeoutRef.current !== null) {
-      clearTimeout(timeoutRef.current)
-      timeoutRef.current = null
-    }
+    abortRef.current?.abort()
+
+    const historico = messages
+      .filter(m => m.content.length > 0)
+      .map(m => ({ role: m.role, content: m.content }))
+
+    const ctrl = new AbortController()
+    abortRef.current = ctrl
     loadingRef.current = true
+
+    const timeoutId = window.setTimeout(() => {
+      ctrl.abort()
+      setMessages(prev =>
+        prev.map(m =>
+          m.id === idAssistente && m.loading
+            ? { ...m, loading: false, erro: 'O servidor demorou demais para responder. Tente novamente.' }
+            : m
+        )
+      )
+      loadingRef.current = false
+      setLoading(false)
+    }, 30_000)
 
     const msgUsuario: Message = {
       id: gerarId(),
@@ -44,6 +61,7 @@ export function useConsultaRAG(): UseConsultaRAGReturn {
       content: pergunta,
       fontes: [],
       mcpInvocados: [],
+      clima: null,
       erro: null,
       loading: false,
     }
@@ -55,6 +73,7 @@ export function useConsultaRAG(): UseConsultaRAGReturn {
       content: '',
       fontes: [],
       mcpInvocados: [],
+      clima: null,
       erro: null,
       loading: true,
     }
@@ -62,110 +81,87 @@ export function useConsultaRAG(): UseConsultaRAGReturn {
     setMessages(prev => [...prev, msgUsuario, msgAssistente])
     setLoading(true)
 
-    const url = `/api/consulta?pergunta=${encodeURIComponent(pergunta)}`
-    const source = new EventSource(url)
-    sourceRef.current = source
-
     const concluir = () => {
+      clearTimeout(timeoutId)
       loadingRef.current = false
-      timeoutRef.current = null
       setLoading(false)
     }
 
-    timeoutRef.current = window.setTimeout(() => {
-      source.close()
-      setMessages(prev =>
-        prev.map(m =>
-          m.id === idAssistente
-            ? { ...m, loading: false, erro: 'O servidor demorou demais para responder.' }
-            : m
-        )
-      )
-      concluir()
-    }, 30_000)
+    fetchEventSource(GATEWAY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pergunta, historico }),
+      signal: ctrl.signal,
+      openWhenHidden: true,
 
-    source.addEventListener('resposta', (event: MessageEvent) => {
-      if (timeoutRef.current !== null) {
-        clearTimeout(timeoutRef.current)
-        timeoutRef.current = null
-      }
-      source.close()
+      onmessage(event) {
+        if (event.event === 'resposta') {
+          let data: RespostaConsulta
+          try {
+            data = JSON.parse(event.data) as RespostaConsulta
+          } catch {
+            setMessages(prev =>
+              prev.map(m =>
+                m.id === idAssistente
+                  ? { ...m, loading: false, erro: 'Resposta inesperada do servidor.' }
+                  : m
+              )
+            )
+            concluir()
+            return
+          }
 
-      let data: RespostaConsulta
-      try {
-        data = JSON.parse(event.data as string) as RespostaConsulta
-      } catch {
+          setMessages(prev =>
+            prev.map(m =>
+              m.id === idAssistente
+                ? {
+                    ...m,
+                    content: data.resposta,
+                    fontes: data.fontes,
+                    mcpInvocados: data.mcp_invocados,
+                    clima: data.clima ?? null,
+                    loading: false,
+                    erro: null,
+                  }
+                : m
+            )
+          )
+          concluir()
+        }
+      },
+
+      onerror(err) {
+        // Erros de cliente (4xx) são fatais — encerra sem retry
+        if (err instanceof Error && 'status' in err && typeof (err as {status: number}).status === 'number') {
+          const status = (err as {status: number}).status
+          if (status >= 400 && status < 500) throw err
+        }
+        // Demais erros (rede, 5xx): fetchEventSource retenta automaticamente
+        // O timeout de 30s acima garante que não fica tentando para sempre
+      },
+
+      onclose() {
         setMessages(prev =>
           prev.map(m =>
-            m.id === idAssistente
-              ? { ...m, loading: false, erro: 'Resposta inesperada do servidor.' }
+            m.id === idAssistente && m.loading
+              ? { ...m, loading: false, erro: 'O servidor encerrou a conexão sem responder.' }
               : m
           )
         )
         concluir()
-        return
-      }
-
+      },
+    }).catch(err => {
+      if (err instanceof Error && err.name === 'AbortError') return
       setMessages(prev =>
         prev.map(m =>
-          m.id === idAssistente
-            ? {
-                ...m,
-                content: data.resposta,
-                fontes: data.fontes,
-                mcpInvocados: data.mcp_invocados,
-                loading: false,
-                erro: null,
-              }
+          m.id === idAssistente && m.loading
+            ? { ...m, loading: false, erro: 'Erro de conexão com o servidor. Verifique se o Gateway está ativo.' }
             : m
         )
       )
       concluir()
     })
-
-    source.addEventListener('erro', (event: MessageEvent) => {
-      if (timeoutRef.current !== null) {
-        clearTimeout(timeoutRef.current)
-        timeoutRef.current = null
-      }
-      source.close()
-
-      let mensagem = 'Serviço temporariamente indisponível. Tente novamente.'
-      try {
-        const data = JSON.parse(event.data as string) as { erro: string }
-        if (data.erro) mensagem = data.erro
-      } catch { /* mantém mensagem padrão */ }
-
-      setMessages(prev =>
-        prev.map(m =>
-          m.id === idAssistente
-            ? { ...m, loading: false, erro: mensagem }
-            : m
-        )
-      )
-      concluir()
-    })
-
-    source.onerror = () => {
-      if (timeoutRef.current !== null) {
-        clearTimeout(timeoutRef.current)
-        timeoutRef.current = null
-      }
-      source.close()
-      setMessages(prev =>
-        prev.map(m =>
-          m.id === idAssistente
-            ? {
-                ...m,
-                loading: false,
-                erro: 'Não foi possível conectar ao servidor. Tente novamente.',
-              }
-            : m
-        )
-      )
-      concluir()
-    }
-  }, [])
+  }, [messages])
 
   const reenviar = useCallback(() => {
     if (ultimaPerguntaRef.current.length > 0) {

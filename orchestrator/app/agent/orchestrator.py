@@ -6,6 +6,7 @@ a LLM decide autonomamente quando invocar ferramentas MCP.
 
 import json
 import logging
+import re
 
 import httpx
 
@@ -48,6 +49,19 @@ WEATHER_TOOL = {
 }
 
 MAX_TOOL_ROUNDS = 3  # Limite de rounds de tool calling para evitar loops
+
+
+REWRITE_PROMPT = (
+    "Dado o histórico de conversa abaixo e a pergunta do usuário, reescreva a pergunta "
+    "como uma consulta autossuficiente que possa ser entendida sem o histórico.\n"
+    "REGRAS OBRIGATÓRIAS:\n"
+    "- Use APENAS termos que aparecem no histórico ou na pergunta original\n"
+    "- NÃO invente produtos, nomes, doses ou informações novas\n"
+    "- Retorne APENAS a pergunta reescrita, sem explicações, sem prefixos, sem aspas\n\n"
+    "Histórico:\n{historico}\n\n"
+    "Pergunta original: {pergunta}\n\n"
+    "Pergunta reescrita:"
+)
 
 
 def _format_rag_context(fontes: list[dict]) -> str:
@@ -102,22 +116,84 @@ async def _execute_tool_call(tool_call: dict) -> tuple[str, dict | None]:
     return json.dumps({"erro": f"Tool '{name}' não encontrada"}), None
 
 
-async def consultar(pergunta: str) -> dict:
+def _sanitize_response(text: str) -> str:
+    """Remove blocos JSON de tool call que o LLM vazar no texto da resposta.
+
+    Localiza cada '{' no texto, tenta decodificar um objeto JSON completo a
+    partir dali (json.JSONDecoder.raw_decode lida com qualquer profundidade de
+    aninhamento) e remove o bloco se for um dict com chave "name" do tipo str.
+    Texto livre com '{' que não forma JSON válido é preservado intacto.
+    """
+    decoder = json.JSONDecoder()
+    result = []
+    i = 0
+    removed = False
+    while i < len(text):
+        if text[i] == '{':
+            try:
+                obj, end = decoder.raw_decode(text, i)
+                if isinstance(obj, dict) and isinstance(obj.get("name"), str):
+                    removed = True
+                    i = end
+                    continue
+            except (json.JSONDecodeError, ValueError):
+                pass
+        result.append(text[i])
+        i += 1
+    cleaned = re.sub(r'\n{3,}', '\n\n', ''.join(result)).strip()
+    if removed:
+        logger.warning("JSON de tool call removido da resposta do LLM")
+    return cleaned
+
+
+async def _rewrite_query(pergunta: str, historico: list) -> str:
+    """Reescreve a pergunta como consulta autossuficiente usando o histórico."""
+    historico_txt = "\n".join(f"{h.role}: {h.content}" for h in historico)
+    prompt = REWRITE_PROMPT.format(historico=historico_txt, pergunta=pergunta)
+    try:
+        msg = await _chat_ollama([{"role": "user", "content": prompt}])
+        rewritten = msg.get("content", "").strip()
+        if rewritten:
+            logger.info("Query reescrita: %s → %s", pergunta[:60], rewritten[:60])
+            return rewritten
+    except Exception as e:
+        logger.warning("Falha no rewrite de query: %s", e)
+    return pergunta
+
+
+async def consultar(pergunta: str, historico: list | None = None) -> dict:
     """Executa o fluxo completo de consulta.
 
-    1. Busca documentos relevantes no RAG
-    2. Monta prompt com contexto RAG + tools disponíveis
-    3. Envia ao Ollama — a LLM decide se precisa chamar tools
-    4. Se houver tool_calls, executa e reenvia resultados à LLM
-    5. Retorna resposta estruturada com fontes, MCP invocados e dados climáticos
+    1. Reescreve a query com contexto do histórico (se houver)
+    2. Busca documentos relevantes no RAG com a query reescrita
+    3. Monta prompt com contexto RAG + tools disponíveis
+    4. Envia ao Ollama — a LLM decide se precisa chamar tools
+    5. Se houver tool_calls, executa e reenvia resultados à LLM
+    6. Retorna resposta estruturada com fontes, MCP invocados e dados climáticos
     """
+    if historico is None:
+        historico = []
+    # Normaliza itens do histórico: aceita dicts {"role": ..., "content": ...}
+    # além de objetos Pydantic com atributos .role / .content
+    historico = [
+        type("H", (), {"role": h["role"], "content": h["content"]})()
+        if isinstance(h, dict) else h
+        for h in historico
+    ]
     mcp_invocados = []
     clima_dados = None
 
-    # 1. RAG — sempre executa
-    logger.info("Consultando RAG para: %s", pergunta[:80])
+    # 1. Query rewriting — só para perguntas curtas/ambíguas com histórico
+    # Perguntas longas (>= 6 palavras) são autossuficientes e não precisam de rewrite
+    query_rag = pergunta
+    palavras = pergunta.split()
+    if historico and len(palavras) < 6:
+        query_rag = await _rewrite_query(pergunta, historico)
+
+    # 2. RAG — sempre executa
+    logger.info("Consultando RAG para: %s", query_rag[:80])
     try:
-        fontes = query_documents(pergunta, top_k=4)
+        fontes = query_documents(query_rag, top_k=4)
     except Exception as e:
         logger.error("Erro ao consultar RAG: %s", e)
         fontes = []
@@ -131,6 +207,7 @@ async def consultar(pergunta: str) -> dict:
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
+        *[{"role": h.role, "content": h.content} for h in historico],
         {"role": "user", "content": user_content},
     ]
 
@@ -143,7 +220,7 @@ async def consultar(pergunta: str) -> dict:
             # Se a LLM não chamou nenhuma tool, temos a resposta final
             tool_calls = assistant_msg.get("tool_calls")
             if not tool_calls:
-                resposta = assistant_msg.get("content", "")
+                resposta = _sanitize_response(assistant_msg.get("content", ""))
                 break
 
             # A LLM decidiu chamar tool(s) — executar cada uma
@@ -165,7 +242,7 @@ async def consultar(pergunta: str) -> dict:
             logger.info("Tool round %d concluído, reenviando ao LLM...", round_num + 1)
         else:
             # Atingiu o limite de rounds sem resposta final
-            resposta = assistant_msg.get("content", "Não foi possível gerar resposta.")
+            resposta = _sanitize_response(assistant_msg.get("content", "Não foi possível gerar resposta."))
 
     except httpx.RequestError as e:
         logger.error("Ollama indisponível: %s", e)

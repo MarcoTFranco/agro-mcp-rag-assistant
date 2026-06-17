@@ -5,6 +5,8 @@ Expõe POST /consulta como ponto de entrada para o sistema.
 
 import logging
 
+from typing import Literal
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
@@ -23,8 +25,14 @@ app = FastAPI(
     version="0.1.0",
 )
 
+class HistoricoItem(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str
+
+
 class ConsultaRequest(BaseModel):
     pergunta: str
+    historico: list[HistoricoItem] = []
 
 
 class FonteResponse(BaseModel):
@@ -62,5 +70,5 @@ async def endpoint_consulta(req: ConsultaRequest):
         raise HTTPException(status_code=400, detail="Pergunta não pode ser vazia")
 
     logger.info("Nova consulta: %s", req.pergunta[:100])
-    resultado = await consultar(req.pergunta)
+    resultado = await consultar(req.pergunta, req.historico)
     return resultado

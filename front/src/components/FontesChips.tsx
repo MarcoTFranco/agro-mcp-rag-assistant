@@ -1,7 +1,8 @@
+import type { FonteResponse } from '../types'
 import './FontesChips.css'
 
 interface FontesChipsProps {
-  fontes: string[]
+  fontes: FonteResponse[]
 }
 
 export function FontesChips({ fontes }: FontesChipsProps) {
@@ -12,8 +13,8 @@ export function FontesChips({ fontes }: FontesChipsProps) {
       <span className="fontes-chips__label">Fontes:</span>
       <ul className="fontes-chips__list" role="list">
         {fontes.map((fonte, i) => (
-          <li key={`${i}-${fonte}`} className="fontes-chips__chip">
-            {fonte}
+          <li key={`${i}-${fonte.titulo}`} className="fontes-chips__chip">
+            {fonte.titulo}
           </li>
         ))}
       </ul>
